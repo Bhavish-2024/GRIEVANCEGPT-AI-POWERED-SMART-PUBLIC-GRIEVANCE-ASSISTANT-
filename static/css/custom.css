@@ -1,0 +1,123 @@
+/* Elevate UI Theme — Clean Pastel SaaS Design System */
+
+:root {
+    --canvas-bg:   #dce9f2;   /* Soft periwinkle/sky blue canvas backdrop */
+    --card-bg:     #ffffff;   /* Pure white card surface */
+    --card-border: #edf2f7;   /* Subtle card border */
+    --pill-active: #d7f465;   /* Elevate signature lime-yellow pill */
+    --pill-text:   #111827;   /* Charcoal dark text */
+    --peach-card:  #fedec4;   /* Pastel apricot/peach */
+    --lilac-card:  #ebe4fc;   /* Pastel lavender/lilac */
+    --lime-card:   #e5f7b5;   /* Pastel light lime */
+    --sky-card:    #dcecfe;   /* Pastel sky blue */
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--canvas-bg);
+    color: #1e293b;
+}
+
+/* ── Custom Scrollbars ────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* ── Elevate Signature Active Nav Pill ────────────────────── */
+.nav-tab-active {
+    background-color: #d7f465 !important;
+    color: #0f172a !important;
+    font-weight: 600 !important;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* ── Chat Bubbles ─────────────────────────────────────────── */
+.chat-bubble-user {
+    background-color: #0f172a;
+    color: #ffffff;
+    border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+}
+
+.chat-bubble-ai {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    color: #1e293b;
+    border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+
+/* ── Elevate Pastel Summary Cards ─────────────────────────── */
+.card-pastel-peach {
+    background-color: #fedec4;
+    border: 1px solid #fcd3b2;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-pastel-peach:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(254, 222, 196, 0.6);
+}
+
+.card-pastel-lilac {
+    background-color: #ebe4fc;
+    border: 1px solid #ddd3f8;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-pastel-lilac:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(235, 228, 252, 0.6);
+}
+
+.card-pastel-lime {
+    background-color: #e5f7b5;
+    border: 1px solid #d5ec98;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-pastel-lime:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(229, 247, 181, 0.6);
+}
+
+.card-pastel-sky {
+    background-color: #dcecfe;
+    border: 1px solid #c4e0fd;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-pastel-sky:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(220, 236, 254, 0.6);
+}
+
+/* ── Progress & Animation ─────────────────────────────────── */
+.progress-fill {
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pulseSlow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+.pulse-slow {
+    animation: pulseSlow 3s infinite ease-in-out;
+}
+
+/* ── High Contrast Table & Data Styling ───────────────────── */
+table td {
+    color: #1e293b;
+    font-weight: 500;
+}
+table th {
+    color: #475569;
+    font-weight: 600;
+}

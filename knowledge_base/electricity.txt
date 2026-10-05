@@ -1,0 +1,22 @@
+# Electricity & Street Lighting: Citizen Filing Guide
+
+Department In-Charge:
+Electricity Department (Discom / TNEB) / Municipal Electrical Engineering
+
+Common Grievance Types:
+1. Frequent unannounced power cuts or prolonged outage in locality.
+2. Low voltage causing damage to domestic home appliances or water motors.
+3. Dark streets due to fused, broken, or continuously unlit street light fixtures.
+4. Dangling or snapped low-hanging high-voltage electrical wires posing immediate life hazard.
+5. Sparking electrical transformers or tilted junction boxes.
+
+Information Essential for Quick Resolution:
+- Exact Pole Number / Location: Street name, pole number stencil (e.g., "Pole #T42, Gandhi Road").
+- Timing & Pattern: Does the outage happen at night, intermittently, or total blackout?
+- Immediate Hazard: If live wires touch ground, mention "Immediate Life Threat / High Hazard".
+- Consumer Service Number: If specific to an electricity meter.
+
+Expected Turnaround Time (TAT):
+- Hazardous hanging wire / transformer sparking: 2 to 4 hours (Emergency Priority).
+- Street light repairs: 48 to 72 hours.
+- Voltage fluctuation resolution: 3 to 5 working days.

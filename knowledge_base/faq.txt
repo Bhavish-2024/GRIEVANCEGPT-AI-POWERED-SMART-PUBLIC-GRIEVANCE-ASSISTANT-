@@ -1,0 +1,26 @@
+# Frequently Asked Questions (FAQ) - Grievance Redressal
+
+Q1: How do I prepare an effective public grievance?
+A: An effective grievance should contain 4 core elements:
+1. Specific problem description (what is wrong).
+2. Precise location and landmark (where it is happening).
+3. Duration (how long it has been going on).
+4. Scope/Severity (is it affecting your house or the entire neighborhood, and is there an immediate health or safety hazard).
+
+Q2: Which department usually handles road complaints?
+A: Complaints regarding potholes, asphalt damage, cave-ins, and broken speed breakers are handled by the Roads Department (Highways & Municipal Works).
+
+Q3: Which department handles drinking water problems?
+A: Potable drinking water supply, pipeline leaks, contaminated tap water, and municipal water tankers are handled by the Water Supply Department (Municipal Water Works / TWAD / Metro Water).
+
+Q4: What should I do if my grievance is incomplete?
+A: Incomplete grievances are often delayed or rejected by municipal officers because field inspectors cannot locate the spot. Use GrievanceGPT's Completeness Review tool to identify missing details (such as street landmark, ward number, or duration) before final submission.
+
+Q5: What is the difference between urgency and severity?
+A: Urgency reflects how quickly an intervention is needed (e.g., High for active live wire or overflowing sewage; Medium for road potholes; Low for certificates). Severity describes the nature of impact: public hazard, service failure, service delay, or routine administrative query.
+
+Q6: How does GrievanceGPT support multilingual complaints?
+A: GrievanceGPT is trained on the CivicDex multilingual dataset. It understands grievances submitted in English, Tamil (தமிழ்), Tanglish (Tamil written in English script like "enga area la water varala"), and Code-mixed vernacular expressions.
+
+Q7: Does GrievanceGPT automatically file my complaint with CPGRAMS?
+A: No. GrievanceGPT is an intelligent citizen drafting and assistance prototype. It prepares a complete, verified, and correctly categorized formal complaint with an internal tracking ID (e.g. GRV-2026-000001) that you can review, edit, copy, or submit to the official municipal or state portal.

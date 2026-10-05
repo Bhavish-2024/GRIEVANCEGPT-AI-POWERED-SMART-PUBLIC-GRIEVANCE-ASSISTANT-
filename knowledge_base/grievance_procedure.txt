@@ -1,0 +1,19 @@
+# Public Grievance Submission Procedure (Guidance & Best Practices)
+
+Overview:
+Public grievances are formal expressions of citizen dissatisfaction with services provided by municipal authorities, government departments, or public utilities. Filing an actionable, well-documented grievance helps administrative officers quickly investigate and rectify issues.
+
+Key Steps for Filing a Grievance:
+1. Identify the Specific Problem: Clearly define the issue (e.g., pipeline rupture, contaminated drinking water, open manhole, street light failure, potholes, or uncollected garbage).
+2. Specify the Exact Location: Provide landmark references, street name, ward number, zone, and municipality/district (e.g., "Opposite Railway Station, Katpadi Road, Ward 12, Vellore").
+3. State the Duration: Mention when the problem started or how many days/weeks it has persisted (e.g., "for the past 4 days").
+4. Quantify Impact and Urgency: State whether the issue affects an individual household or an entire neighborhood/street. Mention any safety hazards (e.g., risk of accidents, disease outbreak, flooding).
+5. Attach Supporting Details: Reference photos, previous token numbers (if this is a follow-up), or utility account numbers if applicable.
+
+Citizen Rights & Timelines:
+- Emergency/Hazardous Grievances (e.g., exposed electric wires, major sewer burst, drinking water contamination) must be inspected within 24 to 48 hours.
+- Routine Municipal Maintenance (e.g., street light bulb replacement, garbage clearance) typically has a turnaround time of 3 to 7 working days.
+- Infrastructure and Capital Works (e.g., road re-tarring, new pipeline installation) may take 15 to 30 days depending on budget approvals.
+
+Prototype Disclaimer:
+GrievanceGPT is an AI-powered assistant designed to help citizens draft, categorize, and complete public grievances. It provides formatted submissions ready for municipal portals or in-person filing.

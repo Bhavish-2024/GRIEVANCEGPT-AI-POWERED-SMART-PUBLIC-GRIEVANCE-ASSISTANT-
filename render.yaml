@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: grievancegpt
+    runtime: python
+    buildCommand: pip install -r requirements.txt && python src/nlp/train_models.py && python src/rag/ingest.py
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: OLLAMA_BASE_URL
+        value: http://localhost:11434
+      - key: OLLAMA_MODEL
+        value: qwen3:8b
+      - key: OLLAMA_FALLBACK_MODEL
+        value: qwen3:4b
+      - key: OLLAMA_EMBED_MODEL
+        value: qwen3-embedding:0.6b

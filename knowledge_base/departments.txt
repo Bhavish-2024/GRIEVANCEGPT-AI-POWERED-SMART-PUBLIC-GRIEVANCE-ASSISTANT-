@@ -1,0 +1,37 @@
+# Municipal & Civic Departments Directory
+
+1. Water Supply Department (Metro Water / TWAD / Municipal Water Works):
+- Responsibilities: Potable drinking water supply, municipal tankers, main pipeline leaks, booster pumping station issues, contaminated water complaints, and water meter installations.
+- Escalation Contact: Assistant Engineer (Water Works), Municipal Executive Engineer.
+
+2. Roads Department (Highways & Municipal Works):
+- Responsibilities: Pothole repairs, asphalt laying, road widening, speed breaker maintenance, pavement and footpath maintenance, and road cave-ins.
+- Escalation Contact: Assistant Divisional Engineer (Highways), City Municipal Engineer.
+
+3. Sanitation Department (Solid Waste Management / Conservancy):
+- Responsibilities: Daily door-to-door waste collection, street sweeping, community dustbin clearing, illegal dumping removal, and commercial waste regulation.
+- Escalation Contact: Sanitary Inspector, City Health Officer.
+
+4. Drainage Department (Stormwater Drainage & Sewerage Board):
+- Responsibilities: Underground drainage (UGD) clearing, sewage overflow, broken or open manholes, silt removal from stormwater drains, and monsoon flood relief channels.
+- Escalation Contact: Sewerage Maintenance Engineer.
+
+5. Electricity Department (State Electricity Board / TNEB / Discom):
+- Responsibilities: Power supply interruptions, low voltage problems, damaged transformers, hazardous hanging overhead wires, leaning electric poles, and meter calibration.
+- Escalation Contact: Junior Engineer (Distribution), Substation In-Charge.
+
+6. Revenue Department (Taluk Office / Collectorate / Municipal Revenue):
+- Responsibilities: Land patta transfers, income and community certificates, ration card status, birth and death certificate corrections, and property tax disputes.
+- Escalation Contact: Village Administrative Officer (VAO), Tahsildar.
+
+7. Public Health Department:
+- Responsibilities: Vector and mosquito control (fogging), infectious disease monitoring, public hospital facilities, food safety inspections, and stray animal vaccination.
+- Escalation Contact: Zonal Health Officer.
+
+8. Transport Department:
+- Responsibilities: Public bus stop shelters, bus frequency, traffic signal timing coordination, auto/taxi fare regulation, and road safety signage.
+- Escalation Contact: Regional Transport Officer (RTO).
+
+9. Welfare Department (Social Welfare & Women Development):
+- Responsibilities: Widow pensions, senior citizen welfare schemes, disability allowance distribution, child welfare schemes, and self-help group subsidies.
+- Escalation Contact: District Social Welfare Officer.
