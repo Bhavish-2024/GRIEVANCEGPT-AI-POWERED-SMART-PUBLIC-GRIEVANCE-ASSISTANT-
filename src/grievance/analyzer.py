@@ -40,18 +40,30 @@ def analyze_grievance_text(
     # Entity Extraction
     extracted = extract_grievance_entities(text)
     
+    vague_locations_set = {
+        "this place", "this area", "here", "my area", "inga", "enga area", "our area",
+        "nearby", "same place", "same area", "place", "area", "this issue",
+        "not specified", "unspecified", "pending confirmation"
+    }
+
+    # Maintain existing reference token if present in session history
+    temp_id = (accumulated_data.get("reference_id") if accumulated_data else None) or generate_grievance_id()
+
     # Merge with accumulated data from multi-turn conversation if present
     if accumulated_data:
-        # If user previously stated a problem and is now providing follow-up info, retain prior core problem & classification
         prior_problem = accumulated_data.get("problem")
         prior_category = accumulated_data.get("category")
         prior_department = accumulated_data.get("department")
         prior_urgency = accumulated_data.get("urgency")
 
-        # Check if the new message is primarily providing location or duration rather than a whole new complaint
+        # Check if the new message is primarily providing location, district, or duration follow-up
+        new_loc = extracted.get("location")
+        is_new_location = bool(new_loc and new_loc.lower() not in vague_locations_set)
+        
         is_followup_info = (
-            extracted.get("location") != "pending confirmation" or 
+            is_new_location or
             extracted.get("duration") != "Unspecified" or 
+            extracted.get("district") != "Not specified" or
             len(text.split()) <= 10
         )
         
@@ -69,16 +81,19 @@ def analyze_grievance_text(
 
         for k, v in accumulated_data.items():
             curr_val = extracted.get(k)
-            if (not curr_val or curr_val in ("pending confirmation", "Unspecified", "Not specified")) and v:
-                extracted[k] = v
-            elif k == "location" and curr_val and curr_val != "pending confirmation":
-                extracted[k] = curr_val
-                
+            if k == "location":
+                if is_new_location:
+                    extracted["location"] = new_loc
+                elif v and str(v).lower() not in vague_locations_set:
+                    extracted["location"] = v
+            else:
+                if (not curr_val or curr_val in ("Unspecified", "Not specified")) and v:
+                    extracted[k] = v
+                elif curr_val and curr_val not in ("Unspecified", "Not specified"):
+                    extracted[k] = curr_val
+
     # Evaluate completeness
     completeness = evaluate_completeness(extracted)
-    
-    # Temporary or pending ID
-    temp_id = generate_grievance_id()
 
     # Determine workflow stage and generate assistant response
     if not completeness["is_complete"]:

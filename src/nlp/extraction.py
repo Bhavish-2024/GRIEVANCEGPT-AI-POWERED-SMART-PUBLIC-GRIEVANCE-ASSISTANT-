@@ -81,20 +81,35 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
 
     # 2. Location extraction
     location = "pending confirmation"
+    vague_terms = {
+        "this place", "this area", "here", "my area", "enga area", "our area",
+        "nearby", "same place", "same area", "place", "area", "this issue",
+        "inga", "not specified", "unspecified", "pending confirmation"
+    }
     found_locs = []
     for match in LOCATION_PATTERNS[0].finditer(text):
         cand = match.group(0).strip()
-        if len(cand) > 3 and cand.lower() not in ("my area", "enga area", "our area", "area", "this issue"):
+        if len(cand) > 3 and cand.lower() not in vague_terms:
             found_locs.append(cand)
             
     match_prep = LOCATION_PATTERNS[1].search(text)
     if match_prep and not found_locs:
         cand = match_prep.group(1).strip()
-        if len(cand) > 3 and cand.lower() not in ("my area", "enga area", "our area", "area", "this issue"):
+        if len(cand) > 3 and cand.lower() not in vague_terms:
             found_locs.append(cand)
                 
     if found_locs:
         location = ", ".join(dict.fromkeys(found_locs))
+
+    # If location is still pending confirmation or vague, check if current text is a location response
+    if location == "pending confirmation" or location.lower() in vague_terms:
+        cleaned_text = re.sub(r'^(?:my\s+)?(?:location|place|street|area|address)\s*(?:is|are|=|:)?\s*', '', text.strip(), flags=re.IGNORECASE).strip()
+        if len(cleaned_text) >= 3 and cleaned_text.lower() not in vague_terms:
+            low_cand = cleaned_text.lower()
+            is_duration = any(d in low_cand for d in ["day", "week", "month", "hour", "year", "naal", "vaaram"])
+            is_district = any(d == low_cand for d in KNOWN_DISTRICTS)
+            if not is_duration and not is_district and not any(k in low_cand for k in ["water", "road", "garbage", "light", "drain", "electric", "power"]):
+                location = cleaned_text.title()
 
     # 3. District detection
     district = "Not specified"

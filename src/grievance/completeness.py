@@ -20,7 +20,11 @@ def evaluate_completeness(extracted_data: Dict[str, Any]) -> Dict[str, Any]:
     district = str(extracted_data.get("district", "")).strip()
     duration = str(extracted_data.get("duration", "")).strip()
 
-    vague_locations = {"", "pending confirmation", "unspecified", "area", "my area", "inga", "enga area", "nearby", "not specified"}
+    vague_locations = {
+        "", "pending confirmation", "unspecified", "area", "my area", "inga",
+        "enga area", "nearby", "not specified", "this place", "this area",
+        "here", "same place", "same area", "our area", "place"
+    }
     vague_districts = {"", "not specified", "unspecified", "unknown", "none", "pending"}
     vague_durations = {"", "unspecified", "unknown", "none", "pending", "not specified"}
 
