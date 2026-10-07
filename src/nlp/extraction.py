@@ -102,48 +102,76 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
             break
 
     # 4. Problem & Category heuristics
-    if any(k in text or k in lowered for k in ["water", "தண்ணீர்", "குடிநீர்", "thanni", "pipeline", "tap"]):
+    has_water = any(k in text or k in lowered for k in ["water", "தண்ணீர்", "குடிநீர்", "thanni", "pipeline", "tap"])
+    has_elec = any(k in text or k in lowered for k in ["electricity", "power", "current", "voltage", "transformer", "electric", "elctric"])
+    has_road = any(k in text or k in lowered for k in ["road", "pothole", "சாலை", "குழி", "kuzhi", "tar road"])
+    has_light = any(k in text or k in lowered for k in ["light", "விளக்கு", "streetlight", "street light", "bulb"])
+    has_garbage = any(k in text or k in lowered for k in ["garbage", "waste", "குப்பை", "kuppai", "dustbin", "bin"])
+    has_drainage = any(k in text or k in lowered for k in ["drain", "sewer", "வடிகால்", "drainage", "saakadai", "சாக்கடை"])
+
+    if has_water and has_elec:
+        category = "water_supply & electricity"
+        department = "Water Supply & Electricity Board"
+        problem = "Drinking water supply disruption AND electrical power outage"
+        affected_service = "Potable Water Supply & Electrical Power Grid"
+        urgency = "high"
+        severity = "service_failure"
+    elif has_road and has_light:
+        category = "roads & street_lighting"
+        department = "Roads & Street Lighting Department"
+        problem = "Road damage/potholes AND defective street lighting"
+        affected_service = "Road Infrastructure & Street Lighting"
+        urgency = "high"
+        severity = "public_hazard"
+    elif has_water and has_drainage:
+        category = "water_supply & drainage"
+        department = "Water Supply & Sewerage Board"
+        problem = "Drinking water supply disruption AND underground drainage blockage"
+        affected_service = "Potable Water Supply & Drainage Network"
+        urgency = "high"
+        severity = "service_failure"
+    elif has_water:
         category = "water_supply"
         department = "Water Supply Department"
         problem = "Drinking water supply disruption or shortage"
         affected_service = "Potable Drinking Water Supply"
         urgency = "high"
         severity = "service_failure"
-    elif any(k in text or k in lowered for k in ["road", "pothole", "சாலை", "குழி", "kuzhi", "tar road"]):
-        category = "roads"
-        department = "Roads Department"
-        problem = "Road damage and hazardous potholes"
-        affected_service = "Road Infrastructure & Safety"
-        urgency = "high"
-        severity = "public_hazard"
-    elif any(k in text or k in lowered for k in ["garbage", "waste", "குப்பை", "kuppai", "dustbin", "bin"]):
-        category = "sanitation"
-        department = "Sanitation Department"
-        problem = "Uncollected garbage accumulation"
-        affected_service = "Solid Waste Conservancy"
-        urgency = "medium"
-        severity = "service_delay"
-    elif any(k in text or k in lowered for k in ["drain", "sewer", "வடிகால்", "drainage", "saakadai", "சாக்கடை"]):
-        category = "drainage"
-        department = "Drainage Department"
-        problem = "Blocked drainage and sewage overflow"
-        affected_service = "Underground Drainage System"
-        urgency = "high"
-        severity = "public_hazard"
-    elif any(k in text or k in lowered for k in ["light", "விளக்கு", "streetlight", "street light", "bulb"]):
-        category = "street_lighting"
-        department = "Electricity Department"
-        problem = "Defective non-functional street lights"
-        affected_service = "Street Lighting Maintenance"
-        urgency = "medium"
-        severity = "service_delay"
-    elif any(k in text or k in lowered for k in ["electricity", "power", "மின்சாரம்", "current", "voltage", "transformer"]):
+    elif has_elec:
         category = "electricity"
-        department = "Electricity Department"
+        department = "Electricity Board (TANGEDCO)"
         problem = "Frequent power cuts or voltage fluctuation"
         affected_service = "Electrical Power Supply"
         urgency = "high"
         severity = "service_failure"
+    elif has_road:
+        category = "road_maintenance"
+        department = "Roads & Infrastructure Department"
+        problem = "Road damage and hazardous potholes"
+        affected_service = "Road Infrastructure & Safety"
+        urgency = "high"
+        severity = "public_hazard"
+    elif has_garbage:
+        category = "garbage_collection"
+        department = "Sanitation & Waste Management"
+        problem = "Uncollected garbage accumulation"
+        affected_service = "Solid Waste Conservancy"
+        urgency = "medium"
+        severity = "service_delay"
+    elif has_drainage:
+        category = "drainage_sewage"
+        department = "Sanitation & Waste Management"
+        problem = "Blocked drainage and sewage overflow"
+        affected_service = "Underground Drainage System"
+        urgency = "high"
+        severity = "public_hazard"
+    elif has_light:
+        category = "street_lighting"
+        department = "Civic Maintenance & Street Lighting"
+        problem = "Defective non-functional street lights"
+        affected_service = "Street Lighting Maintenance"
+        urgency = "medium"
+        severity = "service_delay"
     elif any(k in text or k in lowered for k in ["ration", "card", "certificate", "சான்றிதழ்", "patta"]):
         category = "certificates"
         department = "Revenue Department"

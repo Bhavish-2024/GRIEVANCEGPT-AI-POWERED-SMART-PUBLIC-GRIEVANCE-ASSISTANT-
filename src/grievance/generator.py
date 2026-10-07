@@ -23,24 +23,47 @@ def generate_structured_grievance(
     duration = extracted_data.get("duration", "Ongoing")
     details = extracted_data.get("additional_details", "")
     
-    # Construct professional subject line
-    subject = f"Urgent Grievance: {problem} at {location}"
-    if len(subject) > 90:
-        subject = f"Grievance: {problem[:50]}... at {location}"
+    # Check if this is a dual / multi-utility complaint (e.g. water & electricity)
+    is_multi_utility = " & " in category or "AND" in problem or ("water" in problem.lower() and "electric" in problem.lower())
 
-    # Construct formal description
-    description_lines = [
-        f"To: The Executive Officer / Grievance Redressal Cell",
-        f"Department: {department}",
-        f"Reference Token: {grievance_id}",
-        "",
-        f"Respected Sir/Madam,",
-        "",
-        f"I am submitting this formal grievance regarding {problem.lower()} in our locality.",
-        f"Location Details: {location}" + (f", District: {district}" if district and district != "Not specified" else ""),
-        f"Duration of Issue: Persisting for {duration}." if duration else "",
-        f"Public Impact / Severity: {severity}.",
-    ]
+    if is_multi_utility:
+        subject = f"Urgent Dual Grievance: Water Supply Disruption & Electrical Power Outage at {location}"
+        description_lines = [
+            f"To: The Executive Officer / Public Utilities Joint Redressal Cell",
+            f"Department: {department}",
+            f"Reference Token: {grievance_id}",
+            "",
+            f"Respected Sir/Madam,",
+            "",
+            f"I am submitting this urgent dual civic grievance regarding severe disruptions in both Drinking Water Supply and Electrical Power Distribution in our area.",
+            "",
+            f"Reported Disruption Details:",
+            f"1. Drinking Water Supply: Severe shortage / supply disruption.",
+            f"2. Electricity Supply: Power outage / transformer & voltage breakdown.",
+            "",
+            f"Location Details: {location}" + (f", District: {district}" if district and district != "Not specified" else ""),
+            f"Duration of Issue: Persisting for {duration}." if duration else "",
+            f"Public Impact / Severity: {severity} (Dual public utility outage).",
+        ]
+    else:
+        # Construct professional subject line
+        subject = f"Urgent Grievance: {problem} at {location}"
+        if len(subject) > 90:
+            subject = f"Grievance: {problem[:50]}... at {location}"
+
+        # Construct formal description
+        description_lines = [
+            f"To: The Executive Officer / Grievance Redressal Cell",
+            f"Department: {department}",
+            f"Reference Token: {grievance_id}",
+            "",
+            f"Respected Sir/Madam,",
+            "",
+            f"I am submitting this formal grievance regarding {problem.lower()} in our locality.",
+            f"Location Details: {location}" + (f", District: {district}" if district and district != "Not specified" else ""),
+            f"Duration of Issue: Persisting for {duration}." if duration else "",
+            f"Public Impact / Severity: {severity}.",
+        ]
     
     if details:
         description_lines.append(f"Additional Observations: {details}")
