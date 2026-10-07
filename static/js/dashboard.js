@@ -72,7 +72,7 @@ function resetConversation() {
             <div class="w-9 h-9 rounded-2xl bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
                 <i data-lucide="bot" class="w-4 h-4"></i>
             </div>
-            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed" style="color: #0f172a !important; background-color: #ffffff !important;">
+            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed" style="color: #0f172a !important; background-color: #f8fafc !important; border: 1.5px solid #cbd5e1 !important;">
                 <p class="font-bold text-slate-900 mb-1" style="color: #0f172a !important; -webkit-text-fill-color: #0f172a !important;">Session Reset. Welcome to GrievanceGPT.</p>
                 <p class="text-slate-900 font-medium" style="color: #0f172a !important; -webkit-text-fill-color: #0f172a !important;">
                     Please describe your public grievance in English, தமிழ், or Tanglish.
@@ -172,8 +172,8 @@ function appendChatMessage(role, text) {
             <div class="w-9 h-9 rounded-2xl bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
                 <i data-lucide="bot" class="w-4 h-4"></i>
             </div>
-            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed shadow-xs" style="color: #0f172a !important; background-color: #ffffff !important;">
-                <p class="whitespace-pre-line text-slate-900 font-medium" style="color: #0f172a !important; -webkit-text-fill-color: #0f172a !important;">${formatAssistantText(text)}</p>
+            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed shadow-xs" style="color: #0f172a !important; background-color: #f8fafc !important; border: 1.5px solid #cbd5e1 !important;">
+                <p class="whitespace-pre-line text-slate-900 font-medium" style="color: #0f172a !important; -webkit-text-fill-color: #0f172a !important; opacity: 1 !important;">${formatAssistantText(text)}</p>
             </div>
         `;
     }

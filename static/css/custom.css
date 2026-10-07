@@ -44,7 +44,7 @@ body {
 
 /* ── Chat Bubbles ─────────────────────────────────────────── */
 .chat-bubble-user {
-    background-color: #0f172a;
+    background-color: #0f172a !important;
     color: #ffffff !important;
     border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
@@ -58,8 +58,8 @@ body {
 }
 
 .chat-bubble-ai {
-    background-color: #ffffff !important;
-    border: 1px solid #cbd5e1 !important;
+    background-color: #f8fafc !important;
+    border: 1.5px solid #cbd5e1 !important;
     color: #0f172a !important;
     -webkit-text-fill-color: #0f172a !important;
     border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
@@ -69,10 +69,15 @@ body {
 .chat-bubble-ai,
 .chat-bubble-ai *,
 #chat-messages .chat-bubble-ai,
-#chat-messages .chat-bubble-ai * {
+#chat-messages .chat-bubble-ai *,
+.chat-bubble-ai p,
+.chat-bubble-ai span,
+.chat-bubble-ai div,
+.chat-bubble-ai em {
     color: #0f172a !important;
     -webkit-text-fill-color: #0f172a !important;
     opacity: 1 !important;
+    font-weight: 500 !important;
 }
 
 .chat-bubble-ai strong,
