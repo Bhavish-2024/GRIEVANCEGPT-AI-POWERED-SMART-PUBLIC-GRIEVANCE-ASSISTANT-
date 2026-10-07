@@ -69,12 +69,12 @@ function resetConversation() {
     const container = document.getElementById('chat-messages');
     container.innerHTML = `
         <div class="flex items-start space-x-3">
-            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 text-white shadow">
+            <div class="w-9 h-9 rounded-2xl bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
                 <i data-lucide="bot" class="w-4 h-4"></i>
             </div>
             <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed">
-                <p class="font-semibold text-blue-300 mb-1">Session Reset. Welcome to GrievanceGPT.</p>
-                <p class="text-slate-200">
+                <p class="font-bold text-slate-900 mb-1">Session Reset. Welcome to GrievanceGPT.</p>
+                <p class="text-slate-800 font-medium">
                     Please describe your public grievance in English, தமிழ், or Tanglish.
                 </p>
             </div>
@@ -160,20 +160,20 @@ function appendChatMessage(role, text) {
 
     if (role === 'user') {
         msgDiv.innerHTML = `
-            <div class="chat-bubble-user p-3.5 max-w-[80%] text-sm leading-relaxed shadow">
-                <p class="whitespace-pre-line">${escapeHtml(text)}</p>
+            <div class="chat-bubble-user p-3.5 max-w-[80%] text-sm leading-relaxed shadow-sm">
+                <p class="whitespace-pre-line font-medium">${escapeHtml(text)}</p>
             </div>
-            <div class="w-8 h-8 rounded-lg bg-slate-700 flex items-center justify-center flex-shrink-0 text-white text-xs font-semibold">
+            <div class="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center flex-shrink-0 text-white text-xs font-semibold">
                 You
             </div>
         `;
     } else {
         msgDiv.innerHTML = `
-            <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center flex-shrink-0 text-white shadow">
+            <div class="w-9 h-9 rounded-2xl bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
                 <i data-lucide="bot" class="w-4 h-4"></i>
             </div>
-            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed shadow">
-                <p class="whitespace-pre-line text-slate-100">${formatAssistantText(text)}</p>
+            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed shadow-xs">
+                <p class="whitespace-pre-line text-slate-900 font-medium">${formatAssistantText(text)}</p>
             </div>
         `;
     }

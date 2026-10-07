@@ -52,10 +52,30 @@ body {
 
 .chat-bubble-ai {
     background-color: #ffffff;
-    border: 1px solid #e2e8f0;
-    color: #1e293b;
+    border: 1px solid #cbd5e1;
+    color: #0f172a !important;
     border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.chat-bubble-ai p, .chat-bubble-ai span, .chat-bubble-ai em, .chat-bubble-ai strong {
+    color: #0f172a !important;
+}
+
+/* ── High-Contrast Global Input & Typography Overrides ───── */
+input, textarea, select {
+    color: #0f172a !important;
+    font-weight: 500 !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: #64748b !important;
+    opacity: 1 !important;
+}
+
+label {
+    color: #334155 !important;
+    font-weight: 600 !important;
 }
 
 /* ── Elevate Pastel Summary Cards ─────────────────────────── */

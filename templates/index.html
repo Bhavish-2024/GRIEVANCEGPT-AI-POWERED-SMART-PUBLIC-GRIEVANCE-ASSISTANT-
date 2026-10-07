@@ -199,25 +199,25 @@
                                 <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
                                 <div>
                                     <h2 class="text-sm font-bold text-slate-900">Smart Intake Dialogue</h2>
-                                    <p class="text-[11px] text-slate-400">Understands English, தமிழ், Tanglish, and Code-Mixed Grievances</p>
+                                    <p class="text-[11px] text-slate-700 font-medium">Understands English, தமிழ், Tanglish, and Code-Mixed Grievances</p>
                                 </div>
                             </div>
-                            <button onclick="resetConversation()" title="Reset Conversation" class="text-slate-500 hover:text-slate-900 text-xs px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center space-x-1.5 transition">
+                            <button onclick="resetConversation()" title="Reset Conversation" class="text-slate-700 hover:text-slate-900 text-xs px-3 py-1.5 rounded-xl bg-slate-100 border border-slate-300 flex items-center space-x-1.5 transition font-semibold">
                                 <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
                                 <span>Reset</span>
                             </button>
                         </div>
 
                         <!-- Quick Prompt Chips -->
-                        <div class="px-5 py-2.5 bg-slate-50/60 border-b border-slate-100 flex items-center space-x-2 overflow-x-auto text-xs">
-                            <span class="text-slate-400 whitespace-nowrap text-[11px] font-medium">Quick Prompts:</span>
-                            <button onclick="fillPrompt('எங்கள் area ல 4 days ah water வரல.')" class="px-3 py-1 rounded-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap transition text-xs shadow-xs">
+                        <div class="px-5 py-2.5 bg-slate-50/90 border-b border-slate-200 flex items-center space-x-2 overflow-x-auto text-xs">
+                            <span class="text-slate-800 whitespace-nowrap text-[11px] font-bold">Quick Prompts:</span>
+                            <button onclick="fillPrompt('எங்கள் area ல 4 days ah water வரல.')" class="px-3 py-1 rounded-full bg-white hover:bg-slate-100 text-slate-900 font-semibold border border-slate-300 whitespace-nowrap transition text-xs shadow-xs">
                                 💧 எங்கள் area ல 4 days ah water வரல
                             </button>
-                            <button onclick="fillPrompt('Large potholes near Katpadi railway station for the last 2 weeks causing accidents.')" class="px-3 py-1 rounded-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap transition text-xs shadow-xs">
+                            <button onclick="fillPrompt('Large potholes near Katpadi railway station for the last 2 weeks causing accidents.')" class="px-3 py-1 rounded-full bg-white hover:bg-slate-100 text-slate-900 font-semibold border border-slate-300 whitespace-nowrap transition text-xs shadow-xs">
                                 🚧 Road Potholes Katpadi
                             </button>
-                            <button onclick="fillPrompt('Street light is not working on 5th Cross Road, Gandhi Nagar since last Friday.')" class="px-3 py-1 rounded-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 whitespace-nowrap transition text-xs shadow-xs">
+                            <button onclick="fillPrompt('Street light is not working on 5th Cross Road, Gandhi Nagar since last Friday.')" class="px-3 py-1 rounded-full bg-white hover:bg-slate-100 text-slate-900 font-semibold border border-slate-300 whitespace-nowrap transition text-xs shadow-xs">
                                 💡 Street Light Gandhi Nagar
                             </button>
                         </div>
@@ -231,10 +231,10 @@
                                 </div>
                                 <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed">
                                     <p class="font-bold text-slate-900 mb-1">Vanakkam! Welcome to GrievanceGPT.</p>
-                                    <p class="text-slate-700">
+                                    <p class="text-slate-900 font-medium">
                                         I am your Smart Public Grievance Assistant. I can help you draft, categorize, and verify civic complaints for municipal and public utilities.
                                     </p>
-                                    <p class="mt-2 text-slate-500 text-xs">
+                                    <p class="mt-2 text-slate-800 text-xs font-medium">
                                         💬 <em>You can describe your problem naturally in English, தமிழ், or Tanglish (e.g., "எங்கள் area ல 4 days ah water வரல").</em>
                                     </p>
                                 </div>
@@ -242,9 +242,9 @@
                         </div>
 
                         <!-- Chat Input Form -->
-                        <form id="chat-form" onsubmit="handleChatSubmit(event)" class="p-4 bg-white border-t border-slate-100 flex items-center space-x-2">
+                        <form id="chat-form" onsubmit="handleChatSubmit(event)" class="p-4 bg-white border-t border-slate-200 flex items-center space-x-2">
                             <input type="text" id="chat-input" placeholder="Describe your grievance or answer follow-up questions..." 
-                                   class="flex-1 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-slate-800 transition">
+                                   class="flex-1 bg-slate-50 border border-slate-300 rounded-2xl px-4 py-3 text-sm text-slate-900 font-medium placeholder-slate-500 focus:outline-none focus:bg-white focus:border-slate-800 transition">
                             <button type="submit" id="chat-submit-btn" class="px-5 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold text-sm rounded-2xl flex items-center space-x-2 shadow-sm transition disabled:opacity-50">
                                 <span>Send</span>
                                 <i data-lucide="send" class="w-4 h-4"></i>
@@ -257,47 +257,47 @@
                         <!-- Completeness Gauge Card -->
                         <div class="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm">
                             <div class="flex items-center justify-between mb-2">
-                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center space-x-2">
-                                    <i data-lucide="gauge" class="w-4 h-4 text-slate-700"></i>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center space-x-2">
+                                    <i data-lucide="gauge" class="w-4 h-4 text-slate-900"></i>
                                     <span>Complaint Completeness</span>
                                 </h3>
-                                <span id="completeness-score-badge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700">0%</span>
+                                <span id="completeness-score-badge" class="text-xs font-extrabold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-900">0%</span>
                             </div>
                             <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
                                 <div id="completeness-bar" class="bg-slate-900 h-2 rounded-full progress-fill" style="width: 0%"></div>
                             </div>
                             <!-- Missing Info Notice -->
-                            <div id="missing-info-box" class="mt-3 p-3 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start space-x-2 hidden">
-                                <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600"></i>
+                            <div id="missing-info-box" class="mt-3 p-3 rounded-2xl bg-amber-50 border border-amber-300 text-xs text-amber-900 font-semibold flex items-start space-x-2 hidden">
+                                <i data-lucide="alert-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-700"></i>
                                 <div>
-                                    <span class="font-bold">Missing Details: </span>
-                                    <span id="missing-items-text">Location, Duration</span>
+                                    <span class="font-extrabold">Missing Details: </span>
+                                    <span id="missing-items-text" class="text-amber-950 font-bold">Location, Duration</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- CivicDex ML Classification Results Card -->
                         <div class="bg-white rounded-3xl border border-slate-100 p-5 shadow-sm">
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3 flex items-center space-x-2">
-                                <i data-lucide="cpu" class="w-4 h-4 text-purple-600"></i>
+                            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 mb-3 flex items-center space-x-2">
+                                <i data-lucide="cpu" class="w-4 h-4 text-purple-700"></i>
                                 <span>CivicDex ML Classifier</span>
                             </h3>
                             <div class="grid grid-cols-2 gap-2.5 text-xs">
-                                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <span class="text-slate-400 block text-[11px] font-medium">Intent:</span>
-                                    <span id="res-intent" class="font-bold text-slate-900">-</span>
+                                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                                    <span class="text-slate-700 block text-[11px] font-bold">Intent:</span>
+                                    <span id="res-intent" class="font-extrabold text-slate-900">-</span>
                                 </div>
-                                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <span class="text-slate-400 block text-[11px] font-medium">Category:</span>
-                                    <span id="res-category" class="font-bold text-slate-900">-</span>
+                                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                                    <span class="text-slate-700 block text-[11px] font-bold">Category:</span>
+                                    <span id="res-category" class="font-extrabold text-slate-900">-</span>
                                 </div>
-                                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <span class="text-slate-400 block text-[11px] font-medium">Department:</span>
-                                    <span id="res-department" class="font-bold text-slate-900">-</span>
+                                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                                    <span class="text-slate-700 block text-[11px] font-bold">Department:</span>
+                                    <span id="res-department" class="font-extrabold text-slate-900">-</span>
                                 </div>
-                                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                                    <span class="text-slate-400 block text-[11px] font-medium">Urgency:</span>
-                                    <span id="res-urgency" class="font-bold text-slate-900">-</span>
+                                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200">
+                                    <span class="text-slate-700 block text-[11px] font-bold">Urgency:</span>
+                                    <span id="res-urgency" class="font-extrabold text-slate-900">-</span>
                                 </div>
                             </div>
                         </div>
@@ -310,27 +310,27 @@
                                         <i data-lucide="file-check-2" class="w-5 h-5 text-emerald-600"></i>
                                         <h3 class="text-sm font-bold text-slate-900">Generated Grievance</h3>
                                     </div>
-                                    <span id="draft-token" class="text-xs font-mono font-bold px-2.5 py-0.5 bg-slate-100 text-slate-800 rounded-full border border-slate-200">GRV-2026-000001</span>
+                                    <span id="draft-token" class="text-xs font-mono font-bold px-2.5 py-0.5 bg-slate-100 text-slate-900 rounded-full border border-slate-300">GRV-2026-000001</span>
                                 </div>
 
                                 <!-- Editable Fields Container -->
                                 <div class="space-y-3 text-xs">
                                     <div>
-                                        <label class="text-slate-500 text-[11px] block font-medium mb-1">Subject Line</label>
-                                        <input type="text" id="draft-subject" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 font-medium">
+                                        <label class="text-slate-700 text-[11px] block font-bold mb-1">Subject Line</label>
+                                        <input type="text" id="draft-subject" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-bold">
                                     </div>
                                     <div>
-                                        <label class="text-slate-500 text-[11px] block font-medium mb-1">Official Formal Letter</label>
-                                        <textarea id="draft-description" rows="5" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-800 font-mono text-[11px] leading-relaxed"></textarea>
+                                        <label class="text-slate-700 text-[11px] block font-bold mb-1">Official Formal Letter</label>
+                                        <textarea id="draft-description" rows="5" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2.5 text-slate-900 font-mono text-xs font-medium leading-relaxed"></textarea>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2">
                                         <div>
-                                            <label class="text-slate-500 text-[11px] block font-medium mb-1">Location</label>
-                                            <input type="text" id="draft-location" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-slate-800">
+                                            <label class="text-slate-700 text-[11px] block font-bold mb-1">Location</label>
+                                            <input type="text" id="draft-location" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-slate-900 font-bold">
                                         </div>
                                         <div>
-                                            <label class="text-slate-500 text-[11px] block font-medium mb-1">Duration</label>
-                                            <input type="text" id="draft-duration" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2 text-slate-800">
+                                            <label class="text-slate-700 text-[11px] block font-bold mb-1">Duration</label>
+                                            <input type="text" id="draft-duration" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-2 text-slate-900 font-bold">
                                         </div>
                                     </div>
                                 </div>
