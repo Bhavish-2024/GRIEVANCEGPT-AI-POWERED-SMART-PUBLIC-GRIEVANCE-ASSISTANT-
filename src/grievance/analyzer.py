@@ -123,9 +123,34 @@ def analyze_grievance_text(
     else:
         stage = "REVIEW"
         structured_grievance = generate_structured_grievance(extracted, classification, temp_id)
+        
+        # Auto-save DRAFT grievance to SQLite immediately so reference ID is persistent and trackable
+        try:
+            from src.database import save_grievance
+            gen_body = structured_grievance.get("description", "") if isinstance(structured_grievance, dict) else str(structured_grievance)
+            gen_subject = structured_grievance.get("subject", "Public Grievance") if isinstance(structured_grievance, dict) else "Public Grievance"
+            save_grievance(
+                original_text=text,
+                normalized_text=text,
+                category=classification.get("category", "general"),
+                department=classification.get("department", "General Administration"),
+                urgency=classification.get("urgency", "medium"),
+                severity=extracted.get("severity", "service_issue"),
+                location=extracted.get("location", ""),
+                district=extracted.get("district", ""),
+                duration=extracted.get("duration", ""),
+                summary=gen_subject,
+                generated_grievance=gen_body,
+                status="DRAFT",
+                grievance_id=temp_id
+            )
+        except Exception as err:
+            print(f"[Auto-save DRAFT warning]: {err}")
+
         assistant_reply = (
             f"Thank you for providing the required details! I have verified your grievance and generated a "
             f"formal structured complaint for the **{classification['department']}** (Priority: **{classification['urgency'].title()}**).\n\n"
+            f"Your Grievance Reference ID is **{temp_id}**.\n\n"
             f"Please review the details in the review panel. You may edit, regenerate, or confirm the submission."
         )
 

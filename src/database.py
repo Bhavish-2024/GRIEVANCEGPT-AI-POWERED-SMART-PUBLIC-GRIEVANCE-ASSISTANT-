@@ -273,13 +273,21 @@ def seed_initial_grievances(force: bool = False) -> None:
 
 
 def generate_grievance_id() -> str:
-    """Generate a unique sequential grievance identifier e.g., GRV-2026-000001."""
+    """Generate a unique sequential grievance identifier e.g., GRV-2026-000111."""
     current_year = datetime.now().year
     with get_db_connection() as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT COUNT(*) FROM grievances")
-        count = cursor.fetchone()[0] + 1
-        return f"GRV-{current_year}-{count:06d}"
+        cursor.execute("SELECT grievance_id FROM grievances")
+        rows = cursor.fetchall()
+        max_seq = 0
+        for r in rows:
+            gid = r[0]
+            if gid and '-' in gid:
+                parts = gid.split('-')
+                if parts[-1].isdigit():
+                    max_seq = max(max_seq, int(parts[-1]))
+        seq = max(max_seq, len(rows)) + 1
+        return f"GRV-{current_year}-{seq:06d}"
 
 def save_grievance(
     original_text: str,
@@ -521,15 +529,30 @@ def get_grievance_for_tracker(grievance_id: str) -> Optional[Dict[str, Any]]:
     """
     Citizen-safe tracker lookup: returns public fields only.
     Excludes internal fields like original_text / normalized_text.
+    Supports flexible matching (exact token, hyphenless, or partial match).
     """
+    cleaned = grievance_id.strip().upper()
+    hyphenless = cleaned.replace('-', '')
     with get_db_connection() as conn:
         cursor = conn.cursor()
         cursor.execute("""
             SELECT grievance_id, created_at, updated_at, category, department,
                    urgency, location, duration, summary, status, admin_remarks, resolved_at
             FROM grievances
-            WHERE grievance_id = ?
-        """, (grievance_id.strip().upper(),))
+            WHERE UPPER(grievance_id) = ? 
+               OR UPPER(REPLACE(grievance_id, '-', '')) = ?
+        """, (cleaned, hyphenless))
+        row = cursor.fetchone()
+        if row:
+            return dict(row)
+
+        cursor.execute("""
+            SELECT grievance_id, created_at, updated_at, category, department,
+                   urgency, location, duration, summary, status, admin_remarks, resolved_at
+            FROM grievances
+            WHERE grievance_id LIKE ? OR REPLACE(grievance_id, '-', '') LIKE ?
+            ORDER BY id DESC LIMIT 1
+        """, (f"%{cleaned}%", f"%{hyphenless}%"))
         row = cursor.fetchone()
         return dict(row) if row else None
 

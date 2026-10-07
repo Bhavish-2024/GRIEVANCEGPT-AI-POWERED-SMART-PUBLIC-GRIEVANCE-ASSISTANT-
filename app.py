@@ -281,6 +281,11 @@ async def api_track_grievance(grievance_id: str):
     """
     rec = get_grievance_for_tracker(grievance_id)
     if not rec:
+        search_results = list_grievances(search=grievance_id.strip(), limit=1)
+        if search_results:
+            rec = get_grievance_for_tracker(search_results[0]["grievance_id"])
+
+    if not rec:
         raise HTTPException(status_code=404, detail="Grievance ID not found. Please check and try again.")
     return JSONResponse(rec)
 
