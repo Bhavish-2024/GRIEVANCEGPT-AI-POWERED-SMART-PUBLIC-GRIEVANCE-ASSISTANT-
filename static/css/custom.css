@@ -45,21 +45,41 @@ body {
 /* ── Chat Bubbles ─────────────────────────────────────────── */
 .chat-bubble-user {
     background-color: #0f172a;
-    color: #ffffff;
+    color: #ffffff !important;
     border-radius: 1.25rem 1.25rem 0.25rem 1.25rem;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
 }
 
+.chat-bubble-user p,
+.chat-bubble-user span,
+.chat-bubble-user div {
+    color: #ffffff !important;
+    -webkit-text-fill-color: #ffffff !important;
+}
+
 .chat-bubble-ai {
-    background-color: #ffffff;
-    border: 1px solid #cbd5e1;
+    background-color: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
     color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
     border-radius: 1.25rem 1.25rem 1.25rem 0.25rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
-.chat-bubble-ai p, .chat-bubble-ai span, .chat-bubble-ai em, .chat-bubble-ai strong {
+.chat-bubble-ai,
+.chat-bubble-ai *,
+#chat-messages .chat-bubble-ai,
+#chat-messages .chat-bubble-ai * {
     color: #0f172a !important;
+    -webkit-text-fill-color: #0f172a !important;
+    opacity: 1 !important;
+}
+
+.chat-bubble-ai strong,
+#chat-messages .chat-bubble-ai strong {
+    color: #020617 !important;
+    -webkit-text-fill-color: #020617 !important;
+    font-weight: 700 !important;
 }
 
 /* ── High-Contrast Global Input & Typography Overrides ───── */

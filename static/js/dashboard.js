@@ -72,9 +72,9 @@ function resetConversation() {
             <div class="w-9 h-9 rounded-2xl bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
                 <i data-lucide="bot" class="w-4 h-4"></i>
             </div>
-            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed">
-                <p class="font-bold text-slate-900 mb-1">Session Reset. Welcome to GrievanceGPT.</p>
-                <p class="text-slate-800 font-medium">
+            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed" style="color: #0f172a !important; background-color: #ffffff !important;">
+                <p class="font-bold text-slate-900 mb-1" style="color: #0f172a !important; -webkit-text-fill-color: #0f172a !important;">Session Reset. Welcome to GrievanceGPT.</p>
+                <p class="text-slate-900 font-medium" style="color: #0f172a !important; -webkit-text-fill-color: #0f172a !important;">
                     Please describe your public grievance in English, தமிழ், or Tanglish.
                 </p>
             </div>
@@ -172,8 +172,8 @@ function appendChatMessage(role, text) {
             <div class="w-9 h-9 rounded-2xl bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
                 <i data-lucide="bot" class="w-4 h-4"></i>
             </div>
-            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed shadow-xs">
-                <p class="whitespace-pre-line text-slate-900 font-medium">${formatAssistantText(text)}</p>
+            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed shadow-xs" style="color: #0f172a !important; background-color: #ffffff !important;">
+                <p class="whitespace-pre-line text-slate-900 font-medium" style="color: #0f172a !important; -webkit-text-fill-color: #0f172a !important;">${formatAssistantText(text)}</p>
             </div>
         `;
     }
@@ -184,7 +184,7 @@ function appendChatMessage(role, text) {
 }
 
 function formatAssistantText(text) {
-    return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    return text.replace(/\*\*(.*?)\*\*/g, '<strong style="color: #020617 !important; -webkit-text-fill-color: #020617 !important; font-weight: 700 !important;">$1</strong>');
 }
 
 function escapeHtml(string) {
