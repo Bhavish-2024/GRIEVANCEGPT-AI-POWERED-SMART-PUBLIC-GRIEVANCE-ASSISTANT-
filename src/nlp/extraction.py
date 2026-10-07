@@ -44,12 +44,21 @@ LOCATION_PATTERNS = [
     re.compile(r'(?:near|opp|opposite|at|in|on|near by|பக்கத்துல|அருகில்)\s+([A-Za-z0-9\s,\.-]+?)(?:\s+(?:for|since|last|from|having|water|road|is|was)|\.|$)', re.IGNORECASE),
 ]
 
-KNOWN_DISTRICTS = ["chennai", "vellore", "coimbatore", "madurai", "salem", "trichy", "tiruchirappalli", "tirunelveli", "kanchipuram", "tiruvallur", "thanjavur", "katpadi"]
+KNOWN_DISTRICTS = [
+    "ariyalur", "chengalpattu", "chennai", "coimbatore", "cuddalore", "dharmapuri", "dindigul",
+    "erode", "kallakurichi", "kanchipuram", "kanyakumari", "karur", "krishnagiri", "madurai",
+    "mayiladuthurai", "nagapattinam", "namakkal", "nilgiris", "perambalur", "pudukkottai",
+    "ramanathapuram", "ranipet", "salem", "sivaganga", "tenkasi", "thanjavur", "theni",
+    "thoothukudi", "tuticorin", "tiruchirappalli", "trichy", "tirunelveli", "tirupattur",
+    "tiruppur", "tiruvallur", "tiruvannamalai", "tiruvarur", "vellore", "viluppuram",
+    "virudhunagar", "katpadi", "adyar", "t nagar", "tambaram", "chromepet", "velachery",
+    "mylapore", "puducherry"
+]
 
 def heuristic_extract(text: str) -> Dict[str, Any]:
     """
     Multilingual heuristic extraction fallback when LLM is unavailable or outputs malformed JSON.
-    Accurately captures duration, location, and issue type for Tamil, Tanglish, and English text.
+    Accurately captures duration, location, district, and issue type for Tamil, Tanglish, and English text.
     """
     lowered = text.lower()
     
@@ -72,25 +81,18 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
 
     # 2. Location extraction
     location = "pending confirmation"
-    # Check for known districts / landmarks
     found_locs = []
-    # Pattern 1: Find all named streets/areas/roads
     for match in LOCATION_PATTERNS[0].finditer(text):
         cand = match.group(0).strip()
         if len(cand) > 3 and cand.lower() not in ("my area", "enga area", "our area", "area", "this issue"):
             found_locs.append(cand)
             
-    # Pattern 2: Preposition-based landmark
     match_prep = LOCATION_PATTERNS[1].search(text)
     if match_prep and not found_locs:
         cand = match_prep.group(1).strip()
         if len(cand) > 3 and cand.lower() not in ("my area", "enga area", "our area", "area", "this issue"):
             found_locs.append(cand)
                 
-    for d in KNOWN_DISTRICTS:
-        if d in lowered:
-            found_locs.append(d.title())
-            
     if found_locs:
         location = ", ".join(dict.fromkeys(found_locs))
 
@@ -100,6 +102,17 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
         if d in lowered:
             district = d.title()
             break
+
+    if district == "Not specified":
+        dist_match = re.search(r'(?:district|city|zone)\s*(?:is|:|=)?\s*([A-Za-z\s]+)', text, re.IGNORECASE)
+        if dist_match:
+            cand_dist = dist_match.group(1).strip().title()
+            if len(cand_dist) >= 3 and cand_dist.lower() not in ("is", "not specified", "unspecified"):
+                district = cand_dist
+        elif len(text.strip().split()) <= 3 and len(text.strip()) >= 3 and not any(c.isdigit() for c in text):
+            cand = text.strip().title()
+            if cand.lower() not in ("yes", "no", "ok", "thanks", "fine", "none", "na", "n/a", "pending confirmation"):
+                district = cand
 
     # 4. Problem & Category heuristics
     has_water = any(k in text or k in lowered for k in ["water", "தண்ணீர்", "குடிநீர்", "thanni", "pipeline", "tap"])

@@ -7,38 +7,23 @@ from typing import Dict, Any, List
 
 def evaluate_completeness(extracted_data: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Evaluate grievance completeness based on required and optional fields.
+    Evaluate grievance completeness based on required fields per user policy:
+    - Problem description (25%)
+    - Location / Street Name (25%)
+    - District / City (25%)
+    - Duration of Issue (25%)
     
-    Required Core Fields (Weights sum to 80%):
-    - Problem description: 25%
-    - Location / Landmark: 25%
-    - Category / Service: 20%
-    - Detailed description: 10%
-    
-    Optional High-Value Fields (Weights sum to 20%):
-    - Duration: 10%
-    - District / Locality scope: 10%
-    
-    Returns:
-        dict: {
-            "score": int (0-100),
-            "is_complete": bool (score >= 70 and not critical_missing),
-            "missing_fields": list of str,
-            "suggestions": list of str,
-            "field_status": dict mapping field to bool
-        }
+    All 4 fields MUST be provided before a grievance can be filed.
     """
     problem = str(extracted_data.get("problem", "")).strip()
     location = str(extracted_data.get("location", "")).strip()
-    category = str(extracted_data.get("category", "")).strip()
-    service = str(extracted_data.get("affected_service", "")).strip()
-    description = str(extracted_data.get("description", "") or extracted_data.get("additional_details", "")).strip()
-    duration = str(extracted_data.get("duration", "")).strip()
     district = str(extracted_data.get("district", "")).strip()
+    duration = str(extracted_data.get("duration", "")).strip()
 
-    # Vague location placeholders to reject
-    vague_locations = {"", "pending confirmation", "unspecified", "area", "my area", "inga", "enga area", "nearby"}
-    
+    vague_locations = {"", "pending confirmation", "unspecified", "area", "my area", "inga", "enga area", "nearby", "not specified"}
+    vague_districts = {"", "not specified", "unspecified", "unknown", "none", "pending"}
+    vague_durations = {"", "unspecified", "unknown", "none", "pending", "not specified"}
+
     score = 0
     missing_fields = []
     suggestions = []
@@ -50,7 +35,7 @@ def evaluate_completeness(extracted_data: Dict[str, Any]) -> Dict[str, Any]:
         field_status["problem"] = True
     else:
         missing_fields.append("Problem description")
-        suggestions.append("Please specify the exact nature of the issue (e.g. no water supply, broken road, overflowing garbage).")
+        suggestions.append("Please specify the exact nature of the issue (e.g. no water supply, broken road, power outage).")
         field_status["problem"] = False
 
     # 2. Location Check (25%)
@@ -62,46 +47,35 @@ def evaluate_completeness(extracted_data: Dict[str, Any]) -> Dict[str, Any]:
         suggestions.append("Please provide the specific street name, ward number, or a nearby landmark.")
         field_status["location"] = False
 
-    # 3. Category / Service Check (20%)
-    if (category and category.lower() not in ("unknown", "other", "")) or (service and len(service) > 2):
-        score += 20
-        field_status["category"] = True
+    # 3. District Check (25%)
+    if district and district.lower() not in vague_districts and len(district) >= 3:
+        score += 25
+        field_status["district"] = True
     else:
-        missing_fields.append("Affected service / department")
-        suggestions.append("Identify which municipal service is affected (e.g. Water Supply, Roads, Electricity, Sanitation).")
-        field_status["category"] = False
+        missing_fields.append("District (e.g. Chennai, Vellore, Coimbatore)")
+        suggestions.append("Specify the district or city name (e.g. Chennai, Vellore, Coimbatore, Madurai).")
+        field_status["district"] = False
 
-    # 4. Description Depth (10%)
-    if (description and len(description) > 10) or (problem and len(problem) > 20):
-        score += 10
-        field_status["description"] = True
-    else:
-        missing_fields.append("Detailed description")
-        suggestions.append("Add a brief sentence describing how the issue affects you or your neighborhood.")
-        field_status["description"] = False
-
-    # 5. Duration (10% - Optional but valuable)
-    if duration and duration.lower() not in ("unspecified", "unknown", "none", ""):
-        score += 10
+    # 4. Duration Check (25%)
+    if duration and duration.lower() not in vague_durations:
+        score += 25
         field_status["duration"] = True
     else:
-        missing_fields.append("Duration")
+        missing_fields.append("Duration (e.g. 4 days, 2 weeks)")
         suggestions.append("Mention how long the issue has persisted (e.g. 4 days, 2 weeks).")
         field_status["duration"] = False
 
-    # 6. District / Locality Scope (10% - Optional)
-    if district and len(district) > 2:
-        score += 10
-        field_status["district"] = True
-    else:
-        field_status["district"] = False
-
-    # Critical requirement: Both problem and location must be present for a grievance to be considered ready
-    critical_missing = not field_status["problem"] or not field_status["location"]
-    is_complete = (score >= 70) and not critical_missing
+    # Mandatory rule: Problem, Location, District, AND Duration MUST all be present
+    critical_missing = (
+        not field_status["problem"] or
+        not field_status["location"] or
+        not field_status["district"] or
+        not field_status["duration"]
+    )
+    is_complete = not critical_missing and (score >= 100)
 
     return {
-        "score": min(score, 100),
+        "score": score,
         "is_complete": is_complete,
         "missing_fields": missing_fields,
         "suggestions": suggestions,

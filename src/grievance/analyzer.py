@@ -103,20 +103,22 @@ def analyze_grievance_text(
             # High-fidelity conversational fallback
             prob = extracted.get('problem', 'your issue')
             loc_missing = not completeness['field_status'].get('location', False)
+            dist_missing = not completeness['field_status'].get('district', False)
             dur_missing = not completeness['field_status'].get('duration', False)
             
             questions = []
             if loc_missing:
-                questions.append("1. Which specific street, ward, or locality is facing this issue? (A landmark is very helpful)")
+                questions.append("• **Location / Street**: Which specific street, ward, or locality is facing this issue? (A landmark is very helpful)")
+            if dist_missing:
+                questions.append("• **District**: Which district or city is this located in (e.g., Chennai, Vellore, Coimbatore, Madurai)?")
             if dur_missing:
-                questions.append("2. How long has this problem persisted (e.g. 4 days, 2 weeks)?")
-            questions.append("3. Is the issue affecting your residence or the entire neighborhood/street?")
+                questions.append("• **Duration**: How long has this problem persisted (e.g., 4 days, 2 weeks)?")
             
             q_list = "\n".join(questions)
             assistant_reply = (
                 f"I understand your grievance regarding **{prob}**.\n\n"
-                f"To prepare an official, actionable grievance for the **{classification['department']}**, "
-                f"could you please clarify:\n{q_list}"
+                f"To file an official, actionable complaint for the **{classification['department']}**, "
+                f"please provide the missing required details:\n\n{q_list}"
             )
             
         structured_grievance = None
