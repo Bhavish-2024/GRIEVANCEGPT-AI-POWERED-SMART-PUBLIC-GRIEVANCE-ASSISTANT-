@@ -281,6 +281,8 @@ async function confirmGrievance() {
         
         appendChatMessage('assistant', `✅ **Grievance Confirmed!**\nYour reference ID is **${result.grievance_id}**. The complaint is saved in the registry under status **CONFIRMED**.`);
         if (window.lucide) lucide.createIcons();
+        loadRegistry();
+        loadAnalytics();
     } catch (err) {
         console.error(err);
         confirmBtn.disabled = false;
@@ -482,10 +484,10 @@ async function loadAnalytics() {
         deptChart = new Chart(ctxDept, {
             type: 'bar',
             data: {
-                labels: deptLabels.length ? deptLabels : ['Water Supply', 'Roads', 'Sanitation', 'Electricity'],
+                labels: deptLabels.length ? deptLabels : ['No Data Recorded'],
                 datasets: [{
                     label: 'Complaints',
-                    data: deptCounts.length ? deptCounts : [12, 8, 15, 6],
+                    data: deptCounts.length ? deptCounts : [0],
                     backgroundColor: '#0f172a',
                     borderRadius: 10,
                     borderSkipped: false
@@ -511,10 +513,10 @@ async function loadAnalytics() {
         urgChart = new Chart(ctxUrg, {
             type: 'doughnut',
             data: {
-                labels: urgLabels.length ? urgLabels : ['HIGH', 'MEDIUM', 'LOW'],
+                labels: urgLabels.length ? urgLabels : ['NO DATA'],
                 datasets: [{
-                    data: urgCounts.length ? urgCounts : [10, 14, 4],
-                    backgroundColor: ['#f87171', '#fbbf24', '#d7f465'],
+                    data: urgCounts.length ? urgCounts : [0],
+                    backgroundColor: ['#f87171', '#fbbf24', '#3b82f6', '#10b981'],
                     borderWidth: 3,
                     borderColor: '#ffffff'
                 }]
@@ -537,6 +539,8 @@ async function loadAnalytics() {
 // Initialize on page load
 window.addEventListener('DOMContentLoaded', () => {
     checkSystemHealth();
+    loadAnalytics();
+    loadRegistry();
 });
 
 // ─── CITIZEN COMPLAINT TRACKER ─────────────────────────────────────────────────
