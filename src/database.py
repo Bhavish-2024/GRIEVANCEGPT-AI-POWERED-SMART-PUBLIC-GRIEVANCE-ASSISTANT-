@@ -418,28 +418,109 @@ def list_grievances(
     status: Optional[str] = None,
     department: Optional[str] = None,
     search: Optional[str] = None,
-    limit: int = 50,
+    limit: int = 200,
     offset: int = 0
 ) -> List[Dict[str, Any]]:
-    """Query list of grievances with parameterized filtering."""
+    """Query list of grievances with parameterized multi-field filtering and flexible search."""
     query = "SELECT * FROM grievances WHERE 1=1"
     params: List[Any] = []
-    
-    if status and status.upper() != "ALL":
-        query += " AND status = ?"
-        params.append(status.upper())
-    if department and department.lower() != "all":
-        query += " AND department = ?"
-        params.append(department)
+
+    # Clean status filter
+    status_filter = None
+    if status:
+        s_clean = status.strip().upper()
+        if s_clean not in ("", "ALL", "ALL STATUSES", "ALL_STATUSES", "ANY", "NONE"):
+            status_filter = s_clean
+
+    # Clean department filter
+    dept_filter = None
+    if department:
+        d_clean = department.strip()
+        if d_clean.lower() not in ("", "all", "all departments", "all_departments", "any", "none"):
+            dept_filter = d_clean
+
     if search and search.strip():
         s = search.strip()
-        query += " AND (grievance_id LIKE ? OR original_text LIKE ? OR location LIKE ? OR summary LIKE ? OR category LIKE ? OR district LIKE ? OR department LIKE ? OR admin_remarks LIKE ?)"
+        s_hl = s.replace("-", "").replace(" ", "")
+        s_sp = s.replace("_", " ")
+        s_un = s.replace(" ", "_")
         term = f"%{s}%"
-        params.extend([term, term, term, term, term, term, term, term])
-        
+        term_hl = f"%{s_hl}%"
+        term_sp = f"%{s_sp}%"
+        term_un = f"%{s_un}%"
+
+        is_id_search = bool(
+            ("GRV" in s.upper()) or
+            (s_hl.isdigit() and len(s_hl) >= 3)
+        )
+
+        search_clause = """(
+            grievance_id LIKE ?
+            OR REPLACE(REPLACE(grievance_id, '-', ''), ' ', '') LIKE ?
+            OR summary LIKE ?
+            OR original_text LIKE ?
+            OR generated_grievance LIKE ?
+            OR department LIKE ?
+            OR location LIKE ?
+            OR district LIKE ?
+            OR status LIKE ?
+            OR status LIKE ?
+            OR REPLACE(status, '_', ' ') LIKE ?
+            OR category LIKE ?
+            OR REPLACE(category, '_', ' ') LIKE ?
+            OR urgency LIKE ?
+            OR admin_remarks LIKE ?
+        )"""
+        search_params = [
+            term, term_hl,
+            term, term, term,
+            term, term, term,
+            term, term_un, term_sp,
+            term, term_sp,
+            term, term
+        ]
+
+        if is_id_search:
+            # When searching by Grievance ID, allow matching the ID directly even if a status or dept filter was active
+            id_clause = "(grievance_id LIKE ? OR REPLACE(REPLACE(grievance_id, '-', ''), ' ', '') LIKE ?)"
+            id_params = [term, term_hl]
+
+            combined_filters = []
+            combined_params = []
+            if status_filter:
+                combined_filters.append("UPPER(status) = ?")
+                combined_params.append(status_filter)
+            if dept_filter:
+                combined_filters.append("(department = ? OR department LIKE ?)")
+                combined_params.extend([dept_filter, f"%{dept_filter}%"])
+
+            if combined_filters:
+                filter_sql = " AND ".join(combined_filters)
+                query += f" AND (({filter_sql} AND {search_clause}) OR {id_clause})"
+                params.extend(combined_params + search_params + id_params)
+            else:
+                query += f" AND {search_clause}"
+                params.extend(search_params)
+        else:
+            if status_filter:
+                query += " AND UPPER(status) = ?"
+                params.append(status_filter)
+            if dept_filter:
+                query += " AND (department = ? OR department LIKE ?)"
+                params.extend([dept_filter, f"%{dept_filter}%"])
+            query += f" AND {search_clause}"
+            params.extend(search_params)
+    else:
+        if status_filter:
+            query += " AND UPPER(status) = ?"
+            params.append(status_filter)
+        if dept_filter:
+            query += " AND (department = ? OR department LIKE ?)"
+            params.extend([dept_filter, f"%{dept_filter}%"])
+
     query += " ORDER BY id DESC LIMIT ? OFFSET ?"
     params.extend([limit, offset])
-    
+
     with db_session() as conn:
         cursor = conn.cursor()
         cursor.execute(query, params)

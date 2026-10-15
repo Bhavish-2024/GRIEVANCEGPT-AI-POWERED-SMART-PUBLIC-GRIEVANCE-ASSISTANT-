@@ -274,7 +274,7 @@ async def api_list_grievances(
     status: Optional[str] = None,
     department: Optional[str] = None,
     search: Optional[str] = None,
-    limit: int = 50,
+    limit: int = 200,
     offset: int = 0
 ):
     """Fetch stored grievance records with filtering — requires X-Admin-PIN header."""
@@ -411,7 +411,7 @@ async def api_admin_list_grievances(
     status: Optional[str] = None,
     department: Optional[str] = None,
     search: Optional[str] = None,
-    limit: int = 100,
+    limit: int = 200,
     offset: int = 0
 ):
     """Admin: fetch all grievances with full details — requires X-Admin-PIN header."""
