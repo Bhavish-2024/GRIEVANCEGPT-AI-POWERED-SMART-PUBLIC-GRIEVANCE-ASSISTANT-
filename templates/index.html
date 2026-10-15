@@ -816,9 +816,9 @@
                                 <div>
                                     <h3 class="text-base font-bold text-slate-900 flex items-center space-x-2">
                                         <i data-lucide="bar-chart-3" class="w-4 h-4 text-purple-600"></i>
-                                        <span>Operations Analytics & Verified ML Intelligence</span>
+                                        <span>Operations & Redressal Analytics</span>
                                     </h3>
-                                    <p class="text-xs text-slate-500">Live operational database metrics and independent CivicDex test evaluations.</p>
+                                    <p class="text-xs text-slate-500">Live operational database metrics and grievance pipeline trends.</p>
                                 </div>
 
                                 <div class="flex items-center space-x-3 text-xs">
@@ -856,51 +856,6 @@
 
                             <div id="analytics-empty" class="hidden p-6 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center text-xs text-slate-500">
                                 No complaints found matching the selected filter criteria.
-                            </div>
-
-                            <!-- Verified CivicDex ML Benchmark Grid -->
-                            <div class="p-5 bg-slate-50/70 rounded-2xl border border-slate-200/80 space-y-3">
-                                <div class="flex items-center justify-between">
-                                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-2">
-                                        <i data-lucide="cpu" class="w-3.5 h-3.5 text-purple-600"></i>
-                                        <span>CivicDex ML Benchmark Evaluation (Independent Test Split N=60)</span>
-                                    </h4>
-                                    <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">Verified Metrics</span>
-                                </div>
-                                <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
-                                    <div class="p-3 bg-white rounded-xl border border-slate-200">
-                                        <span class="text-slate-500 text-[10px] block font-semibold">Intent Classification</span>
-                                        <div class="flex items-baseline space-x-1.5 mt-0.5">
-                                            <span id="ml-intent-f1" class="text-xl font-black text-slate-900">97.8%</span>
-                                            <span class="text-[10px] font-bold text-purple-700">F1</span>
-                                        </div>
-                                        <span class="text-[10px] text-slate-500 block">Acc: <strong id="ml-intent-acc" class="text-slate-800">96.7%</strong></span>
-                                    </div>
-                                    <div class="p-3 bg-white rounded-xl border border-slate-200">
-                                        <span class="text-slate-500 text-[10px] block font-semibold">Department Routing</span>
-                                        <div class="flex items-baseline space-x-1.5 mt-0.5">
-                                            <span id="ml-dept-f1" class="text-xl font-black text-slate-900">81.0%</span>
-                                            <span class="text-[10px] font-bold text-blue-700">F1</span>
-                                        </div>
-                                        <span class="text-[10px] text-slate-500 block">Acc: <strong id="ml-dept-acc" class="text-slate-800">83.3%</strong></span>
-                                    </div>
-                                    <div class="p-3 bg-white rounded-xl border border-slate-200">
-                                        <span class="text-slate-500 text-[10px] block font-semibold">Category Classification</span>
-                                        <div class="flex items-baseline space-x-1.5 mt-0.5">
-                                            <span id="ml-cat-f1" class="text-xl font-black text-slate-900">74.6%</span>
-                                            <span class="text-[10px] font-bold text-emerald-700">F1</span>
-                                        </div>
-                                        <span class="text-[10px] text-slate-500 block">Acc: <strong id="ml-cat-acc" class="text-slate-800">76.7%</strong></span>
-                                    </div>
-                                    <div class="p-3 bg-white rounded-xl border border-slate-200">
-                                        <span class="text-slate-500 text-[10px] block font-semibold">Urgency Assessment</span>
-                                        <div class="flex items-baseline space-x-1.5 mt-0.5">
-                                            <span id="ml-urg-f1" class="text-xl font-black text-slate-900">59.2%</span>
-                                            <span class="text-[10px] font-bold text-amber-700">F1</span>
-                                        </div>
-                                        <span class="text-[10px] text-slate-500 block">Acc: <strong id="ml-urg-acc" class="text-slate-800">58.3%</strong></span>
-                                    </div>
-                                </div>
                             </div>
 
                             <!-- 6 Chart Canvases in 2-Column Grid -->
