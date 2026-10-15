@@ -431,10 +431,11 @@ def list_grievances(
     if department and department.lower() != "all":
         query += " AND department = ?"
         params.append(department)
-    if search:
-        query += " AND (original_text LIKE ? OR location LIKE ? OR grievance_id LIKE ?)"
-        term = f"%{search}%"
-        params.extend([term, term, term])
+    if search and search.strip():
+        s = search.strip()
+        query += " AND (grievance_id LIKE ? OR original_text LIKE ? OR location LIKE ? OR summary LIKE ? OR category LIKE ? OR district LIKE ? OR department LIKE ? OR admin_remarks LIKE ?)"
+        term = f"%{s}%"
+        params.extend([term, term, term, term, term, term, term, term])
         
     query += " ORDER BY id DESC LIMIT ? OFFSET ?"
     params.extend([limit, offset])

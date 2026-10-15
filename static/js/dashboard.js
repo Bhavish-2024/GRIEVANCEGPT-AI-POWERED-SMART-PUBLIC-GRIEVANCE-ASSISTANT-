@@ -1023,12 +1023,22 @@ function renderStatusStepper(activeStep) {
     });
 }
 
-// Also allow Enter key in tracker input
+// Also allow Enter key in tracker input and registry search input
 document.addEventListener('DOMContentLoaded', () => {
     const trackerInput = document.getElementById('tracker-input');
     if (trackerInput) {
         trackerInput.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') trackComplaint();
+        });
+    }
+    const admSearchInput = document.getElementById('adm-search');
+    if (admSearchInput) {
+        admSearchInput.addEventListener('input', handleAdminSearchInput);
+        admSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                loadAdminGrievances();
+            }
         });
     }
 });
@@ -1149,16 +1159,61 @@ async function adminLogout() {
     closeAdminDrawer();
 }
 
+let adminSearchDebounceTimer = null;
+
+function handleAdminSearchInput() {
+    const input = document.getElementById('adm-search');
+    const clearBtn = document.getElementById('adm-search-clear');
+    if (clearBtn) {
+        if (input && input.value.trim().length > 0) {
+            clearBtn.classList.remove('hidden');
+        } else {
+            clearBtn.classList.add('hidden');
+        }
+    }
+    clearTimeout(adminSearchDebounceTimer);
+    adminSearchDebounceTimer = setTimeout(() => {
+        loadAdminGrievances();
+    }, 250);
+}
+
+function clearAdminSearch() {
+    const input = document.getElementById('adm-search');
+    const clearBtn = document.getElementById('adm-search-clear');
+    if (input) input.value = '';
+    if (clearBtn) clearBtn.classList.add('hidden');
+    loadAdminGrievances();
+}
+
+function resetAdminFilters() {
+    const searchEl = document.getElementById('adm-search');
+    const statusEl = document.getElementById('adm-filter-status');
+    const deptEl   = document.getElementById('adm-filter-dept');
+    const clearBtn = document.getElementById('adm-search-clear');
+    if (searchEl) searchEl.value = '';
+    if (statusEl) statusEl.value = '';
+    if (deptEl)   deptEl.value = '';
+    if (clearBtn) clearBtn.classList.add('hidden');
+    loadAdminGrievances();
+}
+
 async function loadAdminGrievances() {
     if (!adminSessionToken && !adminSessionPin) return;
 
     const statusEl = document.getElementById('adm-filter-status');
     const deptEl   = document.getElementById('adm-filter-dept');
     const searchEl = document.getElementById('adm-search');
+    const clearBtn = document.getElementById('adm-search-clear');
+    const countBadge = document.getElementById('adm-registry-count');
 
     const status = statusEl ? statusEl.value : '';
     const dept   = deptEl ? deptEl.value : '';
     const search = searchEl ? searchEl.value.trim() : '';
+
+    if (clearBtn) {
+        if (search) clearBtn.classList.remove('hidden');
+        else clearBtn.classList.add('hidden');
+    }
 
     let url = `/api/admin/grievances?limit=100`;
     if (status) url += `&status=${encodeURIComponent(status)}`;
@@ -1174,8 +1229,30 @@ async function loadAdminGrievances() {
         if (!tbody) return;
         tbody.innerHTML = '';
 
+        if (countBadge) {
+            countBadge.textContent = `${grievances.length} complaint${grievances.length === 1 ? '' : 's'}${search ? ' matching' : ''}`;
+        }
+
         if (!grievances.length) {
-            tbody.innerHTML = `<tr><td colspan="8" class="p-5 text-center text-slate-500 text-xs">No complaints found under this filter.</td></tr>`;
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="p-8 text-center text-slate-500 text-xs">
+                        <div class="flex flex-col items-center justify-center space-y-2 py-4">
+                            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                                <i data-lucide="search-x" class="w-5 h-5"></i>
+                            </div>
+                            <p class="font-bold text-slate-800 text-sm">No complaints found</p>
+                            <p class="text-slate-500 text-xs max-w-sm">
+                                ${search ? `No records match "${escapeHtml(search)}".` : 'No complaints match the selected status or department filter.'}
+                            </p>
+                            <button onclick="resetAdminFilters()" class="mt-2 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-semibold transition">
+                                Clear Search & Reset Filters
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            if (window.lucide) lucide.createIcons();
             return;
         }
 
@@ -1183,6 +1260,11 @@ async function loadAdminGrievances() {
             const meta = STATUS_META[g.status] || STATUS_META['DRAFT'];
             const tr = document.createElement('tr');
             tr.className = 'hover:bg-slate-50/80 transition cursor-pointer border-b border-slate-100 text-xs';
+            tr.onclick = (e) => {
+                if (!e.target.closest('button')) {
+                    openAdminDrawer(g.grievance_id, g.summary || g.original_text, g.status, g.admin_remarks || '');
+                }
+            };
             tr.innerHTML = `
                 <td class="p-3 font-mono font-semibold text-slate-800 text-xs whitespace-nowrap">${escapeHtml(g.grievance_id)}</td>
                 <td class="p-3 max-w-[200px] truncate text-slate-700 font-medium">${escapeHtml(g.summary || g.original_text?.slice(0,60) || '-')}</td>
@@ -1211,7 +1293,7 @@ async function loadAdminGrievances() {
     }
 }
 
-function openAdminDrawer(grvId, summary, currentStatus, currentRemarks) {
+async function openAdminDrawer(grvId, summary, currentStatus, currentRemarks) {
     currentAdminGrievanceId = grvId;
     document.getElementById('drawer-grv-id').textContent = grvId;
     document.getElementById('drawer-summary').textContent = summary || '(no summary)';
@@ -1223,6 +1305,27 @@ function openAdminDrawer(grvId, summary, currentStatus, currentRemarks) {
     drawer.classList.remove('hidden');
     drawer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     if (window.lucide) lucide.createIcons();
+
+    // Fetch complete complaint file details to enrich drawer
+    try {
+        const res = await fetch(`/api/admin/grievances/${encodeURIComponent(grvId)}`, {
+            headers: getAdminAuthHeaders()
+        });
+        if (res.ok) {
+            const d = await res.json();
+            const deptEl = document.getElementById('drawer-dept');
+            const locEl = document.getElementById('drawer-location');
+            const descEl = document.getElementById('drawer-description');
+            if (deptEl) deptEl.textContent = d.department || '-';
+            if (locEl) locEl.textContent = d.location || (d.district ? d.district : '-');
+            if (descEl) descEl.textContent = d.original_text || d.generated_grievance || summary || '-';
+            if (d.summary && document.getElementById('drawer-summary')) {
+                document.getElementById('drawer-summary').textContent = d.summary;
+            }
+        }
+    } catch (e) {
+        console.warn('Error fetching full grievance details:', e);
+    }
 }
 
 function closeAdminDrawer() {

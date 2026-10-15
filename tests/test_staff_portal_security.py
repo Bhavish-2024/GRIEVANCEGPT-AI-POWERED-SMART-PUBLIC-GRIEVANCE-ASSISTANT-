@@ -131,3 +131,34 @@ def test_backward_compatibility_with_admin_pin(client):
     res = client.get("/api/admin/stats", headers={"X-Admin-PIN": ADMIN_PIN})
     assert res.status_code == 200
     assert "total" in res.json()
+
+
+def test_admin_grievance_search_filters(client):
+    """Admin registry search filter must find records by ID and keywords."""
+    headers = {"X-Admin-PIN": ADMIN_PIN}
+    
+    # Search by full ID
+    res = client.get("/api/admin/grievances?search=GRV-2026-000109", headers=headers)
+    assert res.status_code == 200
+    items = res.json()
+    assert len(items) >= 1
+    assert items[0]["grievance_id"] == "GRV-2026-000109"
+
+    # Search by ID suffix
+    res_suffix = client.get("/api/admin/grievances?search=000109", headers=headers)
+    assert res_suffix.status_code == 200
+    suffix_items = res_suffix.json()
+    assert len(suffix_items) >= 1
+    assert any(x["grievance_id"] == "GRV-2026-000109" for x in suffix_items)
+
+
+def test_admin_get_single_grievance_record(client):
+    """Admin single grievance endpoint must return full details of a complaint."""
+    headers = {"X-Admin-PIN": ADMIN_PIN}
+    res = client.get("/api/admin/grievances/GRV-2026-000109", headers=headers)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["grievance_id"] == "GRV-2026-000109"
+    assert "department" in data
+    assert "original_text" in data
+    assert "status" in data

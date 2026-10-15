@@ -418,6 +418,14 @@ async def api_admin_list_grievances(
     records = list_grievances(status=status, department=department, search=search, limit=limit, offset=offset)
     return JSONResponse(records)
 
+@app.get("/api/admin/grievances/{grievance_id}", dependencies=[Depends(verify_admin)])
+async def api_admin_get_grievance(grievance_id: str):
+    """Admin: fetch single grievance record by ID with full details."""
+    rec = get_grievance(grievance_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Grievance record not found")
+    return JSONResponse(rec)
+
 @app.patch("/api/admin/grievances/{grievance_id}", dependencies=[Depends(verify_admin)])
 async def api_admin_update_grievance(grievance_id: str, req: AdminUpdateRequest):
     """Admin: update grievance status and/or remarks — requires X-Admin-PIN header."""
