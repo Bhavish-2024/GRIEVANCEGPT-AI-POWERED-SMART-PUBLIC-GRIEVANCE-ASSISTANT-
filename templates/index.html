@@ -469,22 +469,54 @@
                         <form onsubmit="handleFaqSearch(event)" class="flex items-center space-x-2">
                             <input type="text" id="faq-query" placeholder="Ask a civic question (e.g. 'Which department handles water supply problems?')..." 
                                    class="flex-1 bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-slate-800 transition">
-                            <button type="submit" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs flex items-center space-x-1.5 transition">
+                            <button type="submit" id="faq-search-btn" class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs sm:text-sm font-semibold shadow-xs flex items-center space-x-1.5 transition shrink-0">
                                 <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
                                 <span>Search</span>
                             </button>
                         </form>
 
+                        <!-- Example Quick Suggestion Pills -->
+                        <div class="mt-3 flex flex-wrap items-center gap-1.5">
+                            <span class="text-[11px] font-semibold text-slate-400 mr-1">Popular Topics:</span>
+                            <button type="button" onclick="runFaqExample('water supply')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center space-x-1">
+                                <span>💧 Drinking Water</span>
+                            </button>
+                            <button type="button" onclick="runFaqExample('road damage and potholes')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center space-x-1">
+                                <span>🛣️ Potholes & Roads</span>
+                            </button>
+                            <button type="button" onclick="runFaqExample('defective street light')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center space-x-1">
+                                <span>💡 Street Lighting</span>
+                            </button>
+                            <button type="button" onclick="runFaqExample('uncollected garbage')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center space-x-1">
+                                <span>🗑️ Waste & Garbage</span>
+                            </button>
+                            <button type="button" onclick="runFaqExample('resolution turnaround time tat')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center space-x-1">
+                                <span>⏱️ Resolution Timelines</span>
+                            </button>
+                            <button type="button" onclick="runFaqExample('how to file a public complaint')" class="px-2.5 py-1 bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 text-slate-700 rounded-lg text-xs font-medium transition flex items-center space-x-1">
+                                <span>📋 Filing Procedure</span>
+                            </button>
+                        </div>
+
                         <!-- Answer Container -->
-                        <div id="faq-answer-box" class="mt-4 p-4 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5 hidden">
-                            <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-                                <h4 class="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
-                                    <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+                        <div id="faq-answer-box" class="mt-4 p-5 bg-slate-50/80 rounded-2xl border border-slate-200/90 space-y-3 hidden">
+                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                                    <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
                                     <span>Grounded Civic Answer</span>
                                 </h4>
-                                <div id="faq-sources-badges" class="flex items-center space-x-1"></div>
+                                <div id="faq-sources-badges" class="flex flex-wrap items-center gap-1.5"></div>
                             </div>
-                            <div id="faq-answer-text" class="text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-line"></div>
+                            <div id="faq-answer-text" class="text-xs sm:text-sm text-slate-800 leading-relaxed space-y-2"></div>
+                            
+                            <!-- Actionable Quick Link -->
+                            <div class="pt-3 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-2">
+                                <span class="text-xs text-slate-500 font-medium">Need to submit an official grievance for this issue?</span>
+                                <button type="button" onclick="fileGrievanceFromFaq()" class="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-xs transition">
+                                    <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+                                    <span>File a Complaint</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </section>

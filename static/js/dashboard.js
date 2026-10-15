@@ -393,14 +393,66 @@ function trackThisId(id) {
 
 // RAG / FAQ Search
 function runFaqExample(query) {
-    document.getElementById('faq-query').value = query;
+    const input = document.getElementById('faq-query');
+    if (input) input.value = query;
+    switchTab('faq');
     handleFaqSearch(new Event('submit'));
+}
+
+function fileGrievanceFromFaq() {
+    const query = document.getElementById('faq-query')?.value || '';
+    switchTab('complaint');
+    if (query) {
+        const chatInput = document.getElementById('chat-input');
+        if (chatInput) {
+            chatInput.value = `I need to file a formal complaint regarding ${query}: `;
+            chatInput.focus();
+        }
+    }
+}
+
+function renderFaqMarkdown(rawText) {
+    if (!rawText) return '';
+    let text = escapeHtml(rawText);
+
+    // Convert ### Headings
+    text = text.replace(/^###\s+(.+)$/gm, '<h3 class="text-xs sm:text-sm font-bold text-slate-900 mt-4 mb-2 flex items-center space-x-1.5 border-b border-slate-200/60 pb-1">$1</h3>');
+
+    // Convert **bold**
+    text = text.replace(/\*\*(.+?)\*\*/g, '<strong class="font-bold text-slate-900">$1</strong>');
+
+    // Convert bullet points • or - or *
+    text = text.replace(/^[•\-\*]\s+(.+)$/gm, '<div class="flex items-start space-x-2 my-1"><span class="text-blue-600 font-bold select-none leading-none mt-1">•</span><span class="text-slate-800 text-xs sm:text-sm leading-relaxed">$1</span></div>');
+
+    // Convert numbered lists
+    text = text.replace(/^(\d+)\.\s+(.+)$/gm, '<div class="flex items-start space-x-2 my-1"><span class="w-4 h-4 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5">$1</span><span class="text-slate-800 text-xs sm:text-sm leading-relaxed">$2</span></div>');
+
+    // Convert paragraphs
+    const blocks = text.split(/\n\n+/);
+    return blocks.map(b => {
+        b = b.trim();
+        if (b.startsWith('<h3') || b.startsWith('<div class="flex items-start')) {
+            return b;
+        }
+        return `<p class="text-xs sm:text-sm text-slate-700 leading-relaxed">${b.replace(/\n/g, '<br/>')}</p>`;
+    }).join('\n');
 }
 
 async function handleFaqSearch(event) {
     if (event) event.preventDefault();
-    const query = document.getElementById('faq-query').value.trim();
-    if (!query) return;
+    const queryInput = document.getElementById('faq-query');
+    const query = queryInput ? queryInput.value.trim() : '';
+    if (!query) {
+        if (queryInput) queryInput.focus();
+        return;
+    }
+
+    const searchBtn = document.getElementById('faq-search-btn');
+    if (searchBtn) {
+        searchBtn.disabled = true;
+        searchBtn.innerHTML = `<i data-lucide="loader-2" class="w-3.5 h-3.5 animate-spin"></i><span>Searching...</span>`;
+        if (window.lucide) lucide.createIcons();
+    }
 
     try {
         const res = await fetch('/api/rag/query', {
@@ -410,21 +462,35 @@ async function handleFaqSearch(event) {
         });
         const data = await res.json();
 
-        document.getElementById('faq-answer-box').classList.remove('hidden');
-        document.getElementById('faq-answer-text').textContent = data.answer;
-
+        const answerBox = document.getElementById('faq-answer-box');
+        const answerText = document.getElementById('faq-answer-text');
         const sourcesBox = document.getElementById('faq-sources-badges');
-        sourcesBox.innerHTML = '';
-        if (data.sources) {
-            data.sources.forEach(src => {
-                const sp = document.createElement('span');
-                sp.className = 'px-2 py-0.5 rounded bg-purple-900/40 text-purple-300 border border-purple-700/50 text-[10px] font-mono';
-                sp.textContent = src;
-                sourcesBox.appendChild(sp);
-            });
+
+        if (answerBox) answerBox.classList.remove('hidden');
+        if (answerText) {
+            answerText.innerHTML = renderFaqMarkdown(data.answer);
         }
+
+        if (sourcesBox) {
+            sourcesBox.innerHTML = '';
+            if (data.sources && data.sources.length > 0) {
+                data.sources.forEach(src => {
+                    const sp = document.createElement('span');
+                    sp.className = 'inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold font-mono shadow-2xs';
+                    sp.innerHTML = `<i data-lucide="file-text" class="w-3.5 h-3.5 text-blue-500"></i><span>${escapeHtml(src)}</span>`;
+                    sourcesBox.appendChild(sp);
+                });
+            }
+        }
+        if (window.lucide) lucide.createIcons();
     } catch (e) {
         console.error("FAQ search error:", e);
+    } finally {
+        if (searchBtn) {
+            searchBtn.disabled = false;
+            searchBtn.innerHTML = `<i data-lucide="sparkles" class="w-3.5 h-3.5"></i><span>Search</span>`;
+            if (window.lucide) lucide.createIcons();
+        }
     }
 }
 
