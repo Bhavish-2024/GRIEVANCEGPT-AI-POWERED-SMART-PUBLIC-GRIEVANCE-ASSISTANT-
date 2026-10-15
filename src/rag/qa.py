@@ -13,20 +13,44 @@ Cite the source file names for the information provided.
 Do not fabricate government policies. If the information is not in the context, state that clearly and suggest consulting municipal officers.
 """
 
+def check_substantive_overlap(query: str, chunks: List[Dict[str, Any]]) -> bool:
+    """Verify that retrieved chunks contain substantive query keywords beyond generic civic stopwords."""
+    import re
+    from src.nlp.preprocessing import normalize_text
+    stopwords = {
+        'what', 'which', 'how', 'where', 'who', 'when', 'why', 'is', 'are', 'was', 'were',
+        'the', 'a', 'an', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or', 'do', 'does',
+        'can', 'could', 'should', 'would', 'i', 'you', 'my', 'your', 'our', 'it', 'this',
+        'that', 'there', 'please', 'tell', 'me', 'about', 'any', 'some'
+    }
+    q_words = [w for w in re.findall(r'\b[a-zA-Z\u0B80-\u0BFF]{3,}\b', normalize_text(query).lower()) if w not in stopwords]
+    if not q_words:
+        return False
+        
+    combined_text = ' '.join(c['text'].lower() for c in chunks)
+    generic_words = {'municipal', 'municipality', 'civic', 'department', 'departments', 'government', 'govt', 'public'}
+    specific_q_words = [w for w in q_words if w not in generic_words]
+    
+    if specific_q_words:
+        specific_matches = [w for w in specific_q_words if w in combined_text]
+        return len(specific_matches) > 0
+    matches = [w for w in q_words if w in combined_text]
+    return len(matches) > 0
+
 def answer_civic_question(query: str) -> Dict[str, Any]:
     """
     Execute grounded RAG workflow:
     1. Retrieve relevant knowledge chunks.
-    2. Format prompt with context.
-    3. Query LLM / synthesize answer.
-    4. Return answer with citations.
+    2. Validate substantive relevance of retrieved documents.
+    3. If no relevant info exists, return honest limitation acknowledgment.
+    4. Otherwise, generate grounded answer with source citations.
     """
-    chunks = retriever.retrieve(query, top_k=3)
+    chunks = retriever.retrieve(query, top_k=3, min_score=0.02)
     
-    if not chunks:
+    if not chunks or not check_substantive_overlap(query, chunks):
         return {
             "query": query,
-            "answer": "No relevant civic knowledge documents found for this query.",
+            "answer": "I could not find relevant information in the municipal civic knowledge base for your inquiry. Please consult your local municipal corporation office or ward administrative center for specific guidance.",
             "sources": [],
             "chunks": []
         }
@@ -51,8 +75,9 @@ def answer_civic_question(query: str) -> Dict[str, Any]:
                     break
         
         extracted_content = " ".join(summary_lines)
+        sources_str = ", ".join(sources)
         answer = (
-            f"Based on civic guidance from **{top_chunk['doc_name']}**:\n\n"
+            f"Based on civic guidance from **{sources_str}**:\n\n"
             f"{extracted_content}\n\n"
             f"For complete details or escalation, please refer to the corresponding department."
         )

@@ -10,6 +10,8 @@ from src.grievance.completeness import evaluate_completeness
 from src.grievance.generator import generate_structured_grievance
 from src.database import generate_grievance_id
 from src.llm.ollama_client import ollama_client
+from src.nlp.intent import validate_intent
+from src.rag.qa import answer_civic_question
 
 CONVERSATIONAL_AGENT_SYSTEM = """You are GrievanceGPT, an AI-powered smart public grievance assistant.
 Your goal is to help citizens prepare complete, verified, and correctly categorized public complaints.
@@ -28,17 +30,160 @@ def analyze_grievance_text(
 ) -> Dict[str, Any]:
     """
     Full pipeline analysis of citizen message:
-    1. ML Classification (Intent, Category, Department, Urgency)
-    2. Information Extraction
-    3. Completeness Checking
-    4. Follow-up / Assistant Response Generation
-    5. Structured Grievance Draft (if ready)
+    1. Intent Validation (Gateway: Greeting, Ambiguous, Civic Question, Complaint, Irrelevant)
+    2. RAG Retrieval & Grounded Answering (for Civic Questions)
+    3. ML Classification & Extraction (for Genuine Civic Complaints)
+    4. Completeness Evaluation & Follow-up Questioning
+    5. Structured Grievance Draft Generation (when complete)
     """
-    # ML Classification
+    # 1. Intent Validation Gate
+    intent_info = validate_intent(
+        text=text,
+        accumulated_data=accumulated_data,
+        session_history=session_history
+    )
+    detected_intent = intent_info["intent"]
+
+    # 1A. GREETING HANDLER: Friendly response without classification or RAG retrieval
+    if detected_intent == "greeting":
+        lang = intent_info.get("language", "english")
+        if lang in ("tamil", "tanglish", "code_mixed") or any(w in text.lower() for w in ["vanakkam", "வணக்கம்"]):
+            reply = (
+                "வணக்கம்! Vanakkam! GrievanceGPT-க்கு வரவேற்கிறோம். உங்களுக்கு எப்படி உதவ முடியும்?\n\n"
+                "குடிநீர் விநியோகத் தடை, சாலை பள்ளங்கள், குப்பை மேடு, அல்லது தெருவிளக்கு பிரச்சனை போன்ற பொதுக் குறைகளை "
+                "பதிவு செய்யலாம், அல்லது நகராட்சி சேவைகள் பற்றிய கேள்விகளை கேட்கலாம்."
+            )
+        else:
+            reply = (
+                "Hello! Vanakkam! Welcome to GrievanceGPT, your AI-powered smart public grievance assistant.\n\n"
+                "How can I assist you today? You can:\n"
+                "• **Report a Civic Issue**: Describe problems like drinking water supply disruptions, damaged roads/potholes, uncollected garbage, or streetlights.\n"
+                "• **Ask Civic Questions**: Inquire about municipal departments, grievance procedures, or civic guidelines."
+            )
+        return {
+            "text": text,
+            "classification": {
+                "intent": "greeting",
+                "intent_confidence": intent_info.get("confidence", 0.99),
+                "category": None,
+                "category_confidence": 0.0,
+                "department": None,
+                "department_confidence": 0.0,
+                "urgency": None,
+                "urgency_confidence": 0.0,
+                "language": lang,
+                "normalized_text": intent_info.get("normalized_text", text),
+                "model_source": "intent_validator"
+            },
+            "extracted_entities": {},
+            "completeness": {"score": 0, "is_complete": False, "missing_fields": [], "field_status": {}},
+            "workflow_stage": "GREETING",
+            "assistant_reply": reply,
+            "structured_grievance": None,
+            "reference_id": None
+        }
+
+    # 1B. AMBIGUOUS INPUT HANDLER: Ask clarification question before complaint retrieval
+    if detected_intent == "ambiguous":
+        lang = intent_info.get("language", "english")
+        reply = (
+            "I would be glad to help you resolve this issue. Could you please specify what kind of civic problem you are experiencing?\n\n"
+            "For example:\n"
+            "• **Drinking Water**: Pipeline rupture, contamination, or supply interruption\n"
+            "• **Roads & Pavements**: Hazardous potholes, broken asphalt, or road cave-ins\n"
+            "• **Street Lighting**: Non-functioning streetlights or dark streets\n"
+            "• **Sanitation**: Uncollected garbage heaps or overflowing dustbins\n"
+            "• **Drainage / Sewage**: Overflowing manholes or blocked drains\n"
+            "• **Electricity**: Power cuts, voltage fluctuations, or hanging live wires"
+        )
+        return {
+            "text": text,
+            "classification": {
+                "intent": "ambiguous",
+                "intent_confidence": intent_info.get("confidence", 0.90),
+                "category": None,
+                "category_confidence": 0.0,
+                "department": None,
+                "department_confidence": 0.0,
+                "urgency": None,
+                "urgency_confidence": 0.0,
+                "language": lang,
+                "normalized_text": intent_info.get("normalized_text", text),
+                "model_source": "intent_validator"
+            },
+            "extracted_entities": {},
+            "completeness": {"score": 0, "is_complete": False, "missing_fields": [], "field_status": {}},
+            "workflow_stage": "CLARIFICATION",
+            "assistant_reply": reply,
+            "structured_grievance": None,
+            "reference_id": None
+        }
+
+    # 1C. CIVIC QUESTION HANDLER: RAG retrieval over authoritative knowledge base
+    if detected_intent == "civic_question":
+        # Pass user's actual question preserving context as retrieval query
+        rag_res = answer_civic_question(query=text)
+        return {
+            "text": text,
+            "classification": {
+                "intent": "civic_question",
+                "intent_confidence": intent_info.get("confidence", 0.92),
+                "category": "civic_information",
+                "category_confidence": 0.92,
+                "department": None,
+                "department_confidence": 0.0,
+                "urgency": "low",
+                "urgency_confidence": 0.90,
+                "language": intent_info.get("language", "english"),
+                "normalized_text": intent_info.get("normalized_text", text),
+                "model_source": "rag_knowledge_base"
+            },
+            "extracted_entities": {},
+            "completeness": {"score": 100, "is_complete": False, "missing_fields": [], "field_status": {}},
+            "workflow_stage": "CIVIC_INFO",
+            "assistant_reply": rag_res["answer"],
+            "structured_grievance": None,
+            "reference_id": None,
+            "rag": rag_res
+        }
+
+    # 1D. IRRELEVANT / OUT-OF-DOMAIN HANDLER
+    if detected_intent == "irrelevant":
+        reply = (
+            "I am GrievanceGPT, an AI assistant dedicated to public municipal civic issues and services "
+            "(such as water supply, roads, sanitation, streetlights, and drainage).\n\n"
+            "Please describe a civic problem you would like to report, or ask a question regarding municipal procedures and guidelines."
+        )
+        return {
+            "text": text,
+            "classification": {
+                "intent": "irrelevant",
+                "intent_confidence": intent_info.get("confidence", 0.85),
+                "category": None,
+                "category_confidence": 0.0,
+                "department": None,
+                "department_confidence": 0.0,
+                "urgency": None,
+                "urgency_confidence": 0.0,
+                "language": intent_info.get("language", "english"),
+                "normalized_text": intent_info.get("normalized_text", text),
+                "model_source": "intent_validator"
+            },
+            "extracted_entities": {},
+            "completeness": {"score": 0, "is_complete": False, "missing_fields": [], "field_status": {}},
+            "workflow_stage": "IRRELEVANT",
+            "assistant_reply": reply,
+            "structured_grievance": None,
+            "reference_id": None
+        }
+
+    # 2. GENUINE CIVIC COMPLAINT PIPELINE
+    # ML Classification (Intent, Category, Department, Urgency)
     classification = classifier.predict(text)
     
     # Entity Extraction
     extracted = extract_grievance_entities(text)
+
     
     vague_locations_set = {
         "this place", "this area", "here", "my area", "inga", "enga area", "our area",

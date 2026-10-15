@@ -13,6 +13,7 @@ from src.config import (
     URGENCY_MODEL_PATH
 )
 from src.nlp.preprocessing import preprocess_for_classification, detect_language, normalize_text
+from src.nlp.intent import validate_intent
 
 logger = logging.getLogger("GrievanceGPT.Classifier")
 
@@ -142,6 +143,37 @@ class GrievanceClassifier:
         norm_text = normalize_text(text)
         prep_text = preprocess_for_classification(text)
         language = detect_language(text)
+
+        # Validate intent before running grievance models
+        intent_info = validate_intent(text)
+        if intent_info["intent"] in ("greeting", "ambiguous", "irrelevant"):
+            return {
+                "intent": intent_info["intent"],
+                "intent_confidence": intent_info["confidence"],
+                "category": None,
+                "category_confidence": 0.0,
+                "department": None,
+                "department_confidence": 0.0,
+                "urgency": None,
+                "urgency_confidence": 0.0,
+                "language": intent_info["language"],
+                "normalized_text": norm_text,
+                "model_source": "intent_validator"
+            }
+        elif intent_info["intent"] == "civic_question":
+            return {
+                "intent": "civic_question",
+                "intent_confidence": intent_info["confidence"],
+                "category": "civic_information",
+                "category_confidence": 0.95,
+                "department": None,
+                "department_confidence": 0.0,
+                "urgency": "low",
+                "urgency_confidence": 0.95,
+                "language": intent_info["language"],
+                "normalized_text": norm_text,
+                "model_source": "intent_validator"
+            }
 
         # Fallback if models are not yet trained
         if not self.is_ready:

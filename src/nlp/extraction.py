@@ -31,12 +31,17 @@ Output ONLY valid JSON matching this schema:
 }
 """
 
+NUM_WORD_MAP = {
+    "one": "1", "two": "2", "three": "3", "four": "4", "five": "5",
+    "six": "6", "seven": "7", "eight": "8", "nine": "9", "ten": "10"
+}
+
 # Regex patterns for heuristic extraction (especially Tamil & Tanglish)
 DURATION_PATTERNS = [
-    re.compile(r'(\d+)\s*(?:days?|naal|naala|நாட்களாக|நாட்களா|நாள்|days\s*ah|days\s*aachu)', re.IGNORECASE),
-    re.compile(r'(\d+)\s*(?:weeks?|vaaram|வாரமாக|வாரங்களாக)', re.IGNORECASE),
-    re.compile(r'(\d+)\s*(?:months?|maasam|மாதமாக)', re.IGNORECASE),
-    re.compile(r'(\d+)\s*(?:hours?|mani|மணி நேரமாக)', re.IGNORECASE),
+    re.compile(r'(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:days?|naal|naala|நாட்களாக|நாட்களா|நாள்|days\s*ah|days\s*aachu)', re.IGNORECASE),
+    re.compile(r'(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:weeks?|vaaram|வாரமாக|வாரங்களாக)', re.IGNORECASE),
+    re.compile(r'(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:months?|maasam|மாதமாக)', re.IGNORECASE),
+    re.compile(r'(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:hours?|mani|மணி நேரமாக)', re.IGNORECASE),
 ]
 
 LOCATION_PATTERNS = [
@@ -67,7 +72,8 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
     for pat in DURATION_PATTERNS:
         match = pat.search(text)
         if match:
-            num = match.group(1)
+            num = match.group(1).lower()
+            num = NUM_WORD_MAP.get(num, num)
             raw = match.group(0).lower()
             if "week" in raw or "vaaram" in raw or "வாரம்" in raw:
                 duration = f"{num} weeks"

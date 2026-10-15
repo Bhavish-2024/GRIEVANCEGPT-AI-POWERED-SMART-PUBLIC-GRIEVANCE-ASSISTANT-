@@ -26,9 +26,10 @@ class KnowledgeRetriever:
                 print(f"[Retriever] Error loading index: {e}. Rebuilding...")
                 self.index_data = build_knowledge_index()
 
-    def retrieve(self, query: str, top_k: int = 3) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, top_k: int = 3, min_score: float = 0.02) -> List[Dict[str, Any]]:
         """
         Retrieve top_k most relevant chunks for a user query.
+        Filters out zero-similarity or irrelevant chunks below min_score.
         """
         if not self.index_data or "chunks" not in self.index_data:
             self._load_index()
@@ -47,6 +48,8 @@ class KnowledgeRetriever:
         results = []
         for idx in top_indices:
             score = float(scores[idx])
+            if score < min_score or score <= 0.0:
+                continue
             chunk = chunks[idx]
             results.append({
                 "doc_name": chunk["doc_name"],
