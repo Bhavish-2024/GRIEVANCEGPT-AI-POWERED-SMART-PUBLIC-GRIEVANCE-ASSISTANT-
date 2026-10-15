@@ -14,8 +14,36 @@ let catChart = null;
 let urgChart = null;
 let trendChart = null;
 let mlBenchmarkChart = null;
-let adminSessionPin = null;          // set after successful PIN verification
-let currentAdminGrievanceId = null;  // ID of the complaint open in the admin drawer
+let adminSessionToken = null;         // 256-bit cryptographically secure session token
+let adminSessionPin = null;           // 2FA Security PIN / fallback
+let adminProfile = null;              // Authenticated officer profile
+let currentAdminGrievanceId = null;   // ID of the complaint open in the admin drawer
+
+function getAdminAuthHeaders() {
+    const headers = {};
+    if (adminSessionToken) {
+        headers['Authorization'] = 'Bearer ' + adminSessionToken;
+        headers['X-Admin-Token'] = adminSessionToken;
+    }
+    if (adminSessionPin) {
+        headers['X-Admin-PIN'] = adminSessionPin;
+    }
+    return headers;
+}
+
+function togglePasswordVisibility(inputId, btn) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const isPassword = input.getAttribute('type') === 'password';
+    input.setAttribute('type', isPassword ? 'text' : 'password');
+    if (btn) {
+        const icon = btn.querySelector('i');
+        if (icon) {
+            icon.setAttribute('data-lucide', isPassword ? 'eye-off' : 'eye');
+            if (window.lucide) lucide.createIcons();
+        }
+    }
+}
 
 // Tab Switching
 function switchTab(tabId) {
@@ -34,7 +62,7 @@ function switchTab(tabId) {
         targetNav.classList.add('nav-tab-active');
     }
 
-    if (tabId === 'admin' && adminSessionPin) {
+    if (tabId === 'admin' && (adminSessionToken || adminSessionPin)) {
         loadAdminGrievances();
         loadAnalytics();
     }
@@ -365,7 +393,7 @@ async function confirmGrievance() {
 
         appendChatMessage('assistant', `✅ **Grievance Confirmed & Registered!**\nYour official tracking ID is **${result.grievance_id}**.\nYou can track this grievance anytime in the **Track Complaint** tab.`);
         
-        if (adminSessionPin) {
+        if (adminSessionToken || adminSessionPin) {
             loadAdminGrievances();
             loadAnalytics();
         }
@@ -494,18 +522,18 @@ async function handleFaqSearch(event) {
     }
 }
 
-// Registry & Drawer View (Protected by Admin PIN)
+// Registry & Drawer View (Protected by Admin Authentication)
 async function loadRegistry() {
-    if (adminSessionPin) {
+    if (adminSessionToken || adminSessionPin) {
         return loadAdminGrievances();
     }
 }
 
 async function viewGrievance(id) {
-    if (!adminSessionPin) return;
+    if (!adminSessionToken && !adminSessionPin) return;
     try {
         const res = await fetch(`/api/admin/grievances/${encodeURIComponent(id)}`, {
-            headers: { 'X-Admin-PIN': adminSessionPin }
+            headers: getAdminAuthHeaders()
         });
         if (res.ok) {
             const data = await res.json();
@@ -1007,59 +1035,134 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ─── ADMIN PORTAL ──────────────────────────────────────────────────────────────
 
-async function adminLogin() {
-    const pin = document.getElementById('admin-pin-input').value;
+async function adminLogin(event) {
+    if (event && event.preventDefault) event.preventDefault();
+
+    const userInput = document.getElementById('admin-user-input');
+    const passInput = document.getElementById('admin-password-input');
+    const pinInput = document.getElementById('admin-pin-input');
     const errEl = document.getElementById('admin-login-error');
-    errEl.classList.add('hidden');
+    const errText = document.getElementById('admin-login-error-text');
+    const submitBtn = document.getElementById('admin-login-btn');
+
+    const username = userInput ? userInput.value.trim() : '';
+    const password = passInput ? passInput.value : '';
+    const pin = pinInput ? pinInput.value.trim() : '';
+
+    if (errEl) errEl.classList.add('hidden');
+
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-emerald-400"></i><span>Authenticating Credentials...</span>`;
+        if (window.lucide) lucide.createIcons();
+    }
 
     try {
-        // Verify PIN against the admin/stats endpoint
-        const res = await fetch('/api/admin/stats', {
-            headers: { 'X-Admin-PIN': pin }
+        const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, pin })
         });
-        if (res.status === 401) {
-            errEl.classList.remove('hidden');
+
+        const data = await res.json();
+
+        if (!res.ok) {
+            if (errText) errText.textContent = data.detail || 'Authentication failed. Please verify credentials.';
+            if (errEl) errEl.classList.remove('hidden');
             return;
         }
-        const stats = await res.json();
+
+        // Store active session token and profile
+        adminSessionToken = data.token;
         adminSessionPin = pin;
+        adminProfile = data.user;
+
+        // Update Officer Profile UI if available
+        if (adminProfile) {
+            const nameEl = document.getElementById('admin-officer-name');
+            const roleEl = document.getElementById('admin-officer-role');
+            if (nameEl && adminProfile.name) nameEl.textContent = adminProfile.name;
+            if (roleEl) {
+                const desig = adminProfile.designation || 'Zonal Municipal Commissioner';
+                const badge = adminProfile.badge_id || 'TN-GOV-REV-2026';
+                roleEl.textContent = `${desig} • ID: ${badge}`;
+            }
+        }
 
         // Show dashboard, hide login card
         document.getElementById('admin-login-card').classList.add('hidden');
         document.getElementById('admin-dashboard').classList.remove('hidden');
 
-        // Populate KPI cards
-        document.getElementById('adm-total').textContent     = stats.total       || 0;
-        document.getElementById('adm-confirmed').textContent = stats.confirmed    || 0;
-        document.getElementById('adm-review').textContent    = stats.under_review || 0;
-        document.getElementById('adm-inprogress').textContent= stats.in_progress  || 0;
-        document.getElementById('adm-forwarded').textContent = stats.forwarded    || 0;
-        document.getElementById('adm-resolved').textContent  = stats.resolved     || 0;
+        // Populate KPI cards from admin stats endpoint
+        const statsRes = await fetch('/api/admin/stats', {
+            headers: getAdminAuthHeaders()
+        });
+        if (statsRes.ok) {
+            const stats = await statsRes.json();
+            const setElem = (id, val) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = val ?? 0;
+            };
+            setElem('adm-total', stats.total);
+            setElem('adm-confirmed', stats.confirmed);
+            setElem('adm-review', stats.under_review);
+            setElem('adm-inprogress', stats.in_progress);
+            setElem('adm-forwarded', stats.forwarded);
+            setElem('adm-resolved', stats.resolved);
+        }
 
         await loadAdminGrievances();
+        loadAnalytics();
         if (window.lucide) lucide.createIcons();
     } catch (e) {
-        errEl.textContent = 'Server error. Please try again.';
-        errEl.classList.remove('hidden');
+        if (errText) errText.textContent = 'Network or server error. Please try again.';
+        if (errEl) errEl.classList.remove('hidden');
         console.error('Admin login error:', e);
+    } finally {
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i><span>Authenticate & Unlock Staff Portal</span>`;
+            if (window.lucide) lucide.createIcons();
+        }
     }
 }
 
-function adminLogout() {
+async function adminLogout() {
+    try {
+        if (adminSessionToken) {
+            await fetch('/api/admin/logout', {
+                method: 'POST',
+                headers: getAdminAuthHeaders()
+            });
+        }
+    } catch (e) {
+        console.warn('Logout notification error:', e);
+    }
+
+    adminSessionToken = null;
     adminSessionPin = null;
+    adminProfile = null;
     currentAdminGrievanceId = null;
+
     document.getElementById('admin-dashboard').classList.add('hidden');
     document.getElementById('admin-login-card').classList.remove('hidden');
-    document.getElementById('admin-pin-input').value = '';
+    const passInput = document.getElementById('admin-password-input');
+    const pinInput = document.getElementById('admin-pin-input');
+    if (passInput) passInput.value = '';
+    if (pinInput) pinInput.value = '';
     closeAdminDrawer();
 }
 
 async function loadAdminGrievances() {
-    if (!adminSessionPin) return;
+    if (!adminSessionToken && !adminSessionPin) return;
 
-    const status = document.getElementById('adm-filter-status').value;
-    const dept   = document.getElementById('adm-filter-dept').value;
-    const search = document.getElementById('adm-search').value.trim();
+    const statusEl = document.getElementById('adm-filter-status');
+    const deptEl   = document.getElementById('adm-filter-dept');
+    const searchEl = document.getElementById('adm-search');
+
+    const status = statusEl ? statusEl.value : '';
+    const dept   = deptEl ? deptEl.value : '';
+    const search = searchEl ? searchEl.value.trim() : '';
 
     let url = `/api/admin/grievances?limit=100`;
     if (status) url += `&status=${encodeURIComponent(status)}`;
@@ -1067,11 +1170,12 @@ async function loadAdminGrievances() {
     if (search) url += `&search=${encodeURIComponent(search)}`;
 
     try {
-        const res = await fetch(url, { headers: { 'X-Admin-PIN': adminSessionPin } });
+        const res = await fetch(url, { headers: getAdminAuthHeaders() });
         if (res.status === 401) { adminLogout(); return; }
         const grievances = await res.json();
 
         const tbody = document.getElementById('admin-table-body');
+        if (!tbody) return;
         tbody.innerHTML = '';
 
         if (!grievances.length) {
@@ -1131,7 +1235,7 @@ function closeAdminDrawer() {
 }
 
 async function submitAdminUpdate() {
-    if (!currentAdminGrievanceId || !adminSessionPin) return;
+    if (!currentAdminGrievanceId || (!adminSessionToken && !adminSessionPin)) return;
     const newStatus  = document.getElementById('drawer-status').value;
     const remarks    = document.getElementById('drawer-remarks').value.trim();
     const btn        = document.getElementById('drawer-submit-btn');
@@ -1145,7 +1249,7 @@ async function submitAdminUpdate() {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Admin-PIN': adminSessionPin
+                ...getAdminAuthHeaders()
             },
             body: JSON.stringify({ status: newStatus, admin_remarks: remarks })
         });
@@ -1157,7 +1261,7 @@ async function submitAdminUpdate() {
             // Refresh table, analytics, and KPI stats
             await loadAdminGrievances();
             loadAnalytics();
-            const statsRes = await fetch('/api/admin/stats', { headers: { 'X-Admin-PIN': adminSessionPin } });
+            const statsRes = await fetch('/api/admin/stats', { headers: getAdminAuthHeaders() });
             if (statsRes.ok) {
                 const stats = await statsRes.json();
                 document.getElementById('adm-total').textContent      = stats.total       || 0;
