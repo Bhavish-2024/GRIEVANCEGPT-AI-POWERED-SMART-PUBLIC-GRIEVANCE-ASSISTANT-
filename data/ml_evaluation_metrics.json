@@ -1,0 +1,354 @@
+{
+  "evaluated_at": "2026-10-15T16:48:53.503005",
+  "dataset_name": "CivicDex Multilingual Tamil/Tanglish/English",
+  "split": "test",
+  "test_sample_count": 60,
+  "is_verified": true,
+  "tasks": {
+    "intent": {
+      "task_name": "Intent Classification",
+      "description": "Identifies citizen intent (complaint, escalation, follow-up, status_query)",
+      "target_column": "intent",
+      "classes": [
+        "complaint",
+        "escalation",
+        "follow_up",
+        "status_query"
+      ],
+      "accuracy": 96.67,
+      "weighted_f1": 97.75,
+      "macro_f1": 66.19,
+      "precision_weighted": 99.17,
+      "recall_weighted": 96.67,
+      "confusion_matrix": [
+        [
+          51,
+          1,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          6
+        ]
+      ],
+      "support": 60
+    },
+    "category": {
+      "task_name": "Category Classification",
+      "description": "Classifies civic domain (water, roads, sanitation, electricity, etc.)",
+      "target_column": "category",
+      "classes": [
+        "certificates",
+        "drainage",
+        "electricity",
+        "public_health",
+        "roads",
+        "sanitation",
+        "street_lighting",
+        "transport",
+        "water_supply",
+        "welfare"
+      ],
+      "accuracy": 76.67,
+      "weighted_f1": 74.59,
+      "macro_f1": 65.62,
+      "precision_weighted": 82.14,
+      "recall_weighted": 76.67,
+      "confusion_matrix": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          6,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          6,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          1,
+          0,
+          1,
+          0,
+          0,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          3,
+          1,
+          0,
+          0,
+          3,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0,
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          11,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "support": 60
+    },
+    "department": {
+      "task_name": "Department Routing",
+      "description": "Routes complaint to responsible administrative department",
+      "target_column": "department",
+      "classes": [
+        "Drainage Department",
+        "Electricity Department",
+        "Public Health Department",
+        "Revenue Department",
+        "Roads Department",
+        "Sanitation Department",
+        "Transport Department",
+        "Water Supply Department",
+        "Welfare Department"
+      ],
+      "accuracy": 83.33,
+      "weighted_f1": 81.01,
+      "macro_f1": 69.11,
+      "precision_weighted": 88.8,
+      "recall_weighted": 83.33,
+      "confusion_matrix": [
+        [
+          6,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          13,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          2,
+          1,
+          0,
+          0,
+          1,
+          0,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          0,
+          6,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          5,
+          0,
+          0,
+          1,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          6,
+          0,
+          0,
+          0
+        ],
+        [
+          2,
+          0,
+          0,
+          0,
+          2,
+          0,
+          2,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          11,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "support": 60
+    },
+    "urgency": {
+      "task_name": "Urgency Assessment",
+      "description": "Estimates response priority (high, medium, low)",
+      "target_column": "urgency",
+      "classes": [
+        "high",
+        "low",
+        "medium"
+      ],
+      "accuracy": 58.33,
+      "weighted_f1": 59.22,
+      "macro_f1": 54.03,
+      "precision_weighted": 64.23,
+      "recall_weighted": 58.33,
+      "confusion_matrix": [
+        [
+          20,
+          0,
+          14
+        ],
+        [
+          0,
+          2,
+          4
+        ],
+        [
+          6,
+          1,
+          13
+        ]
+      ],
+      "support": 60
+    }
+  },
+  "notes": "Independent evaluation on held-out test split (zero training text overlap). Metrics clearly separate Intent, Category, Department, and Urgency. Urgency reflects real-world multi-class imbalance."
+}

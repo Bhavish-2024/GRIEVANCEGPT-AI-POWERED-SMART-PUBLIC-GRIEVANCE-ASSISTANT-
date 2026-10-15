@@ -155,7 +155,7 @@
                     <!-- Notification Bell -->
                     <button onclick="switchTab('tracker')" title="Active Grievances" class="w-9 h-9 rounded-full bg-slate-50 border border-slate-200/80 flex items-center justify-center text-slate-600 relative hover:bg-slate-100 transition">
                         <i data-lucide="bell" class="w-4 h-4"></i>
-                        <span class="absolute -top-1 -right-1 w-4 h-4 bg-slate-900 text-white rounded-full text-[9px] font-bold flex items-center justify-center">4</span>
+                        <span id="header-active-count" class="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-slate-900 text-white rounded-full text-[9px] font-bold flex items-center justify-center">0</span>
                     </button>
                 </div>
             </header>
@@ -310,7 +310,7 @@
                                         <i data-lucide="file-check-2" class="w-5 h-5 text-emerald-600"></i>
                                         <h3 class="text-sm font-bold text-slate-900">Generated Grievance</h3>
                                     </div>
-                                    <span id="draft-token" class="text-xs font-mono font-bold px-2.5 py-0.5 bg-slate-100 text-slate-900 rounded-full border border-slate-300">GRV-2026-000001</span>
+                                    <span id="draft-token" class="text-xs font-mono font-bold px-2.5 py-0.5 bg-slate-100 text-slate-900 rounded-full border border-slate-300">Draft Token</span>
                                 </div>
 
                                 <!-- Editable Fields Container -->
@@ -599,55 +599,245 @@
 
                 <!-- ================= TAB 5: ANALYTICS DASHBOARD ================= -->
                 <section id="tab-analytics" class="tab-content hidden space-y-6">
-                    <!-- Metric KPI Cards styled like Elevate's Weekly Progress footer -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Total Registered</span>
-                            <div id="kpi-total" class="text-3xl font-extrabold text-slate-900 mt-1">0</div>
-                            <span class="text-[11px] text-slate-500 mt-1 block">Live intake counter</span>
+                    <!-- Filter Controls & Header -->
+                    <div class="bg-white rounded-3xl border border-slate-100 p-6 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+                                <i data-lucide="bar-chart-3" class="w-5 h-5 text-purple-600"></i>
+                                <span>Civic Intelligence & Operations Analytics</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-0.5">Real-time database metrics reconciled across all grievance lifecycle stages.</p>
                         </div>
-                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Confirmed Complaints</span>
-                            <div id="kpi-confirmed" class="text-3xl font-extrabold text-emerald-600 mt-1">0</div>
-                            <span class="text-[11px] text-emerald-600 mt-1 block font-medium">Citizen verified</span>
-                        </div>
-                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Incomplete Drafts</span>
-                            <div id="kpi-drafts" class="text-3xl font-extrabold text-amber-600 mt-1">0</div>
-                            <span class="text-[11px] text-amber-600 mt-1 block font-medium">Pending follow-up</span>
-                        </div>
-                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider block">Civic Accuracy</span>
-                            <div class="text-3xl font-extrabold text-purple-600 mt-1">94.2%</div>
-                            <span class="text-[11px] text-purple-600 mt-1 block font-medium">Weighted F1 on CivicDex</span>
+
+                        <!-- Filter Controls -->
+                        <div class="flex flex-wrap items-center gap-3 text-xs">
+                            <div class="flex items-center space-x-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5">
+                                <label for="analytics-filter-dept" class="text-slate-500 font-medium text-[11px]">Dept:</label>
+                                <select id="analytics-filter-dept" onchange="loadAnalytics()" class="bg-transparent text-slate-800 font-semibold outline-none cursor-pointer">
+                                    <option value="all">All Departments</option>
+                                    <option value="Water Supply Department">Water Supply</option>
+                                    <option value="Electricity Board (TANGEDCO)">Electricity Board</option>
+                                    <option value="Roads & Infrastructure Department">Roads & Infrastructure</option>
+                                    <option value="Sanitation & Waste Management">Sanitation & Waste</option>
+                                    <option value="Civic Maintenance & Street Lighting">Street Lighting</option>
+                                    <option value="Public Health Department">Public Health</option>
+                                </select>
+                            </div>
+
+                            <div class="flex items-center space-x-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5">
+                                <label for="analytics-filter-date" class="text-slate-500 font-medium text-[11px]">Period:</label>
+                                <select id="analytics-filter-date" onchange="loadAnalytics()" class="bg-transparent text-slate-800 font-semibold outline-none cursor-pointer">
+                                    <option value="all">All Time</option>
+                                    <option value="30d">Last 30 Days</option>
+                                    <option value="7d">Last 7 Days</option>
+                                </select>
+                            </div>
+
+                            <button onclick="loadAnalytics()" id="analytics-refresh-btn" class="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition shadow-xs">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5" id="analytics-refresh-icon"></i>
+                                <span>Refresh</span>
+                            </button>
+
+                            <span id="analytics-last-updated" class="text-[11px] text-slate-400 font-mono hidden sm:inline"></span>
                         </div>
                     </div>
 
-                    <!-- Charts Grid styled exactly like Elevate Weekly Progress & Next Lessons -->
+                    <!-- Dynamic Notification / Status Banners -->
+                    <div id="analytics-loading" class="hidden p-4 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center space-x-2">
+                        <i data-lucide="loader-2" class="w-4 h-4 text-blue-600 animate-spin"></i>
+                        <span class="font-medium">Aggregating live operational metrics from database...</span>
+                    </div>
+
+                    <div id="analytics-error" class="hidden p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-rose-600 shrink-0"></i>
+                            <span id="analytics-error-text" class="font-medium">Failed to load analytics data.</span>
+                        </div>
+                        <button onclick="loadAnalytics()" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg text-xs transition">
+                            Retry
+                        </button>
+                    </div>
+
+                    <div id="analytics-empty" class="hidden p-8 rounded-3xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-2">
+                        <i data-lucide="inbox" class="w-10 h-10 text-slate-400 mx-auto"></i>
+                        <h3 class="text-sm font-bold text-slate-700">No Complaints Recorded for this Selection</h3>
+                        <p class="text-xs text-slate-500 max-w-sm mx-auto">Try resetting your department or date filter to view registered complaints.</p>
+                    </div>
+
+                    <!-- Operational KPI Cards Row (6 Cards Reconciled) -->
+                    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                        <div class="p-5 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Registered</span>
+                            <div id="kpi-total" class="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">0</div>
+                            <span class="text-[10px] text-slate-500 mt-0.5 block">All intakes & drafts</span>
+                        </div>
+                        <div class="p-5 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Submitted Complaints</span>
+                            <div id="kpi-submitted" class="text-2xl sm:text-3xl font-extrabold text-blue-600 mt-1">0</div>
+                            <span class="text-[10px] text-blue-600 mt-0.5 block font-medium">Citizen verified</span>
+                        </div>
+                        <div class="p-5 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Pending Action</span>
+                            <div id="kpi-pending" class="text-2xl sm:text-3xl font-extrabold text-amber-600 mt-1">0</div>
+                            <span class="text-[10px] text-amber-600 mt-0.5 block font-medium">Review & triage</span>
+                        </div>
+                        <div class="p-5 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Active In-Progress</span>
+                            <div id="kpi-inprogress" class="text-2xl sm:text-3xl font-extrabold text-purple-600 mt-1">0</div>
+                            <span class="text-[10px] text-purple-600 mt-0.5 block font-medium">Field teams engaged</span>
+                        </div>
+                        <div class="p-5 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Resolved Cases</span>
+                            <div id="kpi-resolved" class="text-2xl sm:text-3xl font-extrabold text-emerald-600 mt-1">0</div>
+                            <span class="text-[10px] text-emerald-600 mt-0.5 block font-medium">Official closure</span>
+                        </div>
+                        <div class="p-5 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Avg. Resolution</span>
+                            <div id="kpi-resolution-time" class="text-2xl sm:text-3xl font-extrabold text-slate-800 mt-1">N/A</div>
+                            <span class="text-[10px] text-slate-500 mt-0.5 block" id="kpi-resolution-sub">Real completed cases</span>
+                        </div>
+                    </div>
+
+                    <!-- Verified CivicDex Machine Learning Model Performance Section -->
+                    <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm space-y-4">
+                        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                            <div class="flex items-center space-x-2.5">
+                                <div class="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
+                                    <i data-lucide="cpu" class="w-4 h-4"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-900">Verified CivicDex Machine Learning Evaluation</h3>
+                                    <p class="text-[11px] text-slate-500">Evaluated on independent test split (N=60, 0 training overlap). Disaggregated by task.</p>
+                                </div>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                                ✓ Reproducible Test Metrics
+                            </span>
+                        </div>
+
+                        <!-- 4 Task Grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                            <div class="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-1">
+                                <span class="text-slate-500 text-[11px] block font-semibold">Intent Classification</span>
+                                <div class="flex items-baseline space-x-2">
+                                    <span id="ml-intent-f1" class="text-2xl font-black text-slate-900">97.8%</span>
+                                    <span class="text-[11px] font-bold text-purple-700">Weighted F1</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 block">Accuracy: <strong id="ml-intent-acc" class="text-slate-800">96.7%</strong></span>
+                            </div>
+
+                            <div class="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-1">
+                                <span class="text-slate-500 text-[11px] block font-semibold">Department Routing</span>
+                                <div class="flex items-baseline space-x-2">
+                                    <span id="ml-dept-f1" class="text-2xl font-black text-slate-900">81.0%</span>
+                                    <span class="text-[11px] font-bold text-blue-700">Weighted F1</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 block">Accuracy: <strong id="ml-dept-acc" class="text-slate-800">83.3%</strong></span>
+                            </div>
+
+                            <div class="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-1">
+                                <span class="text-slate-500 text-[11px] block font-semibold">Category Classification</span>
+                                <div class="flex items-baseline space-x-2">
+                                    <span id="ml-cat-f1" class="text-2xl font-black text-slate-900">74.6%</span>
+                                    <span class="text-[11px] font-bold text-emerald-700">Weighted F1</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 block">Accuracy: <strong id="ml-cat-acc" class="text-slate-800">76.7%</strong></span>
+                            </div>
+
+                            <div class="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-1">
+                                <span class="text-slate-500 text-[11px] block font-semibold">Urgency Assessment</span>
+                                <div class="flex items-baseline space-x-2">
+                                    <span id="ml-urg-f1" class="text-2xl font-black text-slate-900">59.2%</span>
+                                    <span class="text-[11px] font-bold text-amber-700">Weighted F1</span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 block">Accuracy: <strong id="ml-urg-acc" class="text-slate-800">58.3%</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid (Rows of 2) -->
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                        <!-- Chart 1: Department Workload -->
+                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                                    <i data-lucide="pie-chart" class="w-4 h-4 text-slate-700"></i>
+                                    <i data-lucide="building-2" class="w-4 h-4 text-slate-700"></i>
                                     <span>Department Workload Distribution</span>
                                 </h3>
-                                <span class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-medium">Live</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">Live DB</span>
                             </div>
                             <div class="h-64">
                                 <canvas id="chart-departments"></canvas>
                             </div>
                         </div>
 
-                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                        <!-- Chart 2: Grievance Status Pipeline -->
+                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                                    <i data-lucide="git-pull-request" class="w-4 h-4 text-blue-600"></i>
+                                    <span>Grievance Status Pipeline</span>
+                                </h3>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">Live DB</span>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="chart-status"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 3: Category Distribution -->
+                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                                    <i data-lucide="tag" class="w-4 h-4 text-purple-600"></i>
+                                    <span>Grievance Category Breakdown</span>
+                                </h3>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">Live DB</span>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="chart-categories"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 4: Urgency Distribution -->
+                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
                             <div class="flex items-center justify-between mb-4">
                                 <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
                                     <i data-lucide="flame" class="w-4 h-4 text-amber-500"></i>
-                                    <span>Grievance Urgency & Severity</span>
+                                    <span>Grievance Urgency Levels</span>
                                 </h3>
-                                <span class="text-xs px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 font-medium">Live</span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">Live DB</span>
                             </div>
                             <div class="h-64">
                                 <canvas id="chart-urgency"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 5: Daily Intake Trends -->
+                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                                    <i data-lucide="calendar" class="w-4 h-4 text-emerald-600"></i>
+                                    <span>Intake Trends Over Time</span>
+                                </h3>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-semibold">Daily</span>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="chart-trends"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Chart 6: Verified ML Benchmark Comparison -->
+                        <div class="p-6 bg-white rounded-3xl border border-slate-100 shadow-sm flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
+                                    <i data-lucide="check-check" class="w-4 h-4 text-purple-600"></i>
+                                    <span>CivicDex ML Benchmark (F1 vs Accuracy)</span>
+                                </h3>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-semibold">Verified N=60</span>
+                            </div>
+                            <div class="h-64">
+                                <canvas id="chart-ml-benchmark"></canvas>
                             </div>
                         </div>
                     </div>

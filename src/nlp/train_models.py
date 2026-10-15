@@ -181,6 +181,15 @@ def main():
     train_and_evaluate("department", train_df, val_df, test_df, DEPARTMENT_MODEL_PATH)
     train_and_evaluate("urgency", train_df, val_df, test_df, URGENCY_MODEL_PATH)
     
+    # Run and persist reproducible evaluation metrics on test split
+    try:
+        from src.nlp.evaluation import run_full_evaluation
+        print("\n---> Running Reproducible Test Split Evaluation...")
+        eval_metrics = run_full_evaluation()
+        print(f"[Evaluation] Metrics successfully verified and saved for {len(eval_metrics.get('tasks', {}))} tasks.")
+    except Exception as e:
+        print(f"[Evaluation Warning] Could not persist evaluation metrics: {e}")
+
     print("\n[Complete] All 4 CivicDex classifiers trained and persisted successfully.")
 
 if __name__ == "__main__":

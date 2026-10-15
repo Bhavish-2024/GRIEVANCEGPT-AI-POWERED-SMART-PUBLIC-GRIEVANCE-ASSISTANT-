@@ -4,6 +4,10 @@ services:
     runtime: python
     buildCommand: pip install -r requirements.txt && python src/nlp/train_models.py && python src/rag/ingest.py
     startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    disk:
+      name: grievance-data
+      mountPath: /opt/render/project/src/data
+      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.3

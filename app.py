@@ -224,10 +224,27 @@ async def api_get_grievance(grievance_id: str):
     return JSONResponse(rec)
 
 @app.get("/api/analytics")
-async def api_analytics():
-    """Retrieve aggregated stats for Chart.js dashboard."""
-    stats = get_analytics_summary()
-    return JSONResponse(stats)
+async def api_analytics(
+    department: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None
+):
+    """Retrieve verified aggregated operational metrics for dashboard charts."""
+    try:
+        stats = get_analytics_summary(department=department, start_date=start_date, end_date=end_date)
+        return JSONResponse(stats)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error generating analytics: {str(e)}")
+
+@app.get("/api/ml/metrics")
+async def api_ml_metrics():
+    """Retrieve reproducible ML evaluation metrics evaluated on CivicDex test dataset."""
+    try:
+        from src.nlp.evaluation import get_verified_ml_metrics
+        metrics = get_verified_ml_metrics()
+        return JSONResponse(metrics)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving ML evaluation metrics: {str(e)}")
 
 @app.get("/api/health")
 async def api_health():
