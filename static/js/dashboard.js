@@ -334,6 +334,7 @@ async function confirmGrievance() {
         subject: document.getElementById('draft-subject')?.value || '',
         description: document.getElementById('draft-description')?.value || '',
         location: document.getElementById('draft-location')?.value || '',
+        district: currentExtractedData.district || '',
         duration: document.getElementById('draft-duration')?.value || '',
         category: currentClassification.category || currentExtractedData.category || "civic_maintenance",
         department: currentClassification.department || currentExtractedData.department || "Municipal Administration",

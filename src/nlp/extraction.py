@@ -65,6 +65,27 @@ KNOWN_DISTRICTS = [
     "mylapore", "puducherry"
 ]
 
+TAMIL_DISTRICT_MAP = {
+    "காட்பாடி": "Katpadi",
+    "சென்னை": "Chennai",
+    "வேலூர்": "Vellore",
+    "கோயம்புத்தூர்": "Coimbatore",
+    "கோவை": "Coimbatore",
+    "மதுரை": "Madurai",
+    "திருச்சி": "Tiruchirappalli",
+    "திருச்சிராப்பள்ளி": "Tiruchirappalli",
+    "சேலம்": "Salem",
+    "ஈரோடு": "Erode",
+    "திருநெல்வேலி": "Tirunelveli",
+    "திண்டுக்கல்": "Dindigul",
+    "தஞ்சாவூர்": "Thanjavur",
+    "காஞ்சிபுரம்": "Kanchipuram",
+    "திருப்பூர்": "Tiruppur",
+    "கடலூர்": "Cuddalore",
+    "விழுப்புரம்": "Viluppuram",
+    "புதுச்சேரி": "Puducherry"
+}
+
 def heuristic_extract(text: str) -> Dict[str, Any]:
     """
     Multilingual heuristic extraction fallback when LLM is unavailable or outputs malformed JSON.
@@ -80,9 +101,9 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
             num = match.group(1).lower()
             num = NUM_WORD_MAP.get(num, num)
             raw = match.group(0).lower()
-            if "week" in raw or "vaaram" in raw or "வாரம்" in raw:
+            if "week" in raw or "vaaram" in raw or "வார" in raw:
                 duration = f"{num} weeks"
-            elif "month" in raw or "maasam" in raw or "மாதம்" in raw:
+            elif "month" in raw or "maasam" in raw or "மாத" in raw:
                 duration = f"{num} months"
             elif "hour" in raw or "mani" in raw or "மணி" in raw:
                 duration = f"{num} hours"
@@ -121,6 +142,15 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
         cand = match_prep.group(1).strip()
         if len(cand) > 3 and cand.lower() not in vague_terms:
             found_locs.append(cand)
+
+    # Tamil postposition landmark pattern (e.g., "காட்பாடி பேருந்து நிலையம் அருகில்")
+    if not found_locs:
+        tamil_loc_pat = re.compile(r'([\u0B80-\u0BFF\sA-Za-z0-9\.-]+?)\s*(?:அருகில்|பக்கத்தில்|பக்கத்துல|எதிரில்|எதிரே)', re.IGNORECASE)
+        match_tamil = tamil_loc_pat.search(text)
+        if match_tamil:
+            cand = match_tamil.group(1).strip()
+            if len(cand) > 3 and cand.lower() not in vague_terms:
+                found_locs.append(cand)
                 
     if found_locs:
         location = ", ".join(dict.fromkeys(found_locs))
@@ -131,7 +161,7 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
         if len(cleaned_text) >= 3 and cleaned_text.lower() not in vague_terms:
             low_cand = cleaned_text.lower()
             is_duration = any(d in low_cand for d in ["day", "week", "month", "hour", "year", "naal", "vaaram"])
-            is_district = any(d == low_cand for d in KNOWN_DISTRICTS)
+            is_district = any(d == low_cand for d in KNOWN_DISTRICTS) or any(d in text for d in TAMIL_DISTRICT_MAP)
             if not is_duration and not is_district and not any(k in low_cand for k in ["water", "road", "garbage", "light", "drain", "electric", "power"]):
                 location = cleaned_text.title()
 
@@ -141,6 +171,13 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
         if d in lowered:
             district = d.title()
             break
+
+    if district == "Not specified":
+        for t_dist, eng_dist in TAMIL_DISTRICT_MAP.items():
+            if t_dist in text:
+                district = eng_dist
+                break
+
 
     if district == "Not specified":
         dist_match = re.search(r'(?:district|city|zone)\s*(?:is|:|=)?\s*([A-Za-z\s]+)', text, re.IGNORECASE)

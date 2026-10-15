@@ -106,6 +106,7 @@ class ConfirmRequest(BaseModel):
     subject: str
     description: str
     location: str
+    district: Optional[str] = ""
     duration: Optional[str] = ""
     category: str
     department: str
@@ -186,6 +187,13 @@ async def api_generate_draft(req: GenerateRequest):
 @app.post("/api/grievance/confirm")
 async def api_confirm_grievance(req: ConfirmRequest):
     """Persist confirmed prototype grievance to SQLite."""
+    # Retain district if already present in draft record and not specified in request
+    district_val = (req.district or "").strip()
+    if not district_val and req.grievance_id:
+        existing = get_grievance(req.grievance_id)
+        if existing and existing.get("district"):
+            district_val = existing["district"]
+
     gid = save_grievance(
         original_text=req.description,
         normalized_text=req.description,
@@ -194,7 +202,7 @@ async def api_confirm_grievance(req: ConfirmRequest):
         urgency=req.urgency,
         severity=req.severity or "service_issue",
         location=req.location,
-        district="",
+        district=district_val,
         duration=req.duration or "",
         summary=req.subject,
         generated_grievance=req.description,

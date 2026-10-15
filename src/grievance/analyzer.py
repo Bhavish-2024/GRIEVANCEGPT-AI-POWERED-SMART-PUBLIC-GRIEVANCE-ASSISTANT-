@@ -44,22 +44,29 @@ def analyze_grievance_text(
     )
     detected_intent = intent_info["intent"]
 
-    # 1A. GREETING HANDLER: Friendly response without classification or RAG retrieval
+    # 1A. GREETING / EMPTY INPUT HANDLER: Friendly response without classification or RAG retrieval
     if detected_intent == "greeting":
         lang = intent_info.get("language", "english")
-        if lang in ("tamil", "tanglish", "code_mixed") or any(w in text.lower() for w in ["vanakkam", "வணக்கம்"]):
+        if intent_info.get("reason") == "empty_input":
             reply = (
-                "வணக்கம்! Vanakkam! GrievanceGPT-க்கு வரவேற்கிறோம். உங்களுக்கு எப்படி உதவ முடியும்?\n\n"
-                "குடிநீர் விநியோகத் தடை, சாலை பள்ளங்கள், குப்பை மேடு, அல்லது தெருவிளக்கு பிரச்சனை போன்ற பொதுக் குறைகளை "
-                "பதிவு செய்யலாம், அல்லது நகராட்சி சேவைகள் பற்றிய கேள்விகளை கேட்கலாம்."
+                "Please enter your message or describe the civic issue you are experiencing.\n\n"
+                "You can report problems such as drinking water supply disruptions, damaged roads/potholes, "
+                "uncollected garbage, or non-functioning streetlights, or ask questions about municipal procedures."
             )
         else:
-            reply = (
-                "Hello! Vanakkam! Welcome to GrievanceGPT, your AI-powered smart public grievance assistant.\n\n"
-                "How can I assist you today? You can:\n"
-                "• **Report a Civic Issue**: Describe problems like drinking water supply disruptions, damaged roads/potholes, uncollected garbage, or streetlights.\n"
-                "• **Ask Civic Questions**: Inquire about municipal departments, grievance procedures, or civic guidelines."
-            )
+            if lang in ("tamil", "tanglish", "code_mixed") or any(w in text.lower() for w in ["vanakkam", "வணக்கம்"]):
+                reply = (
+                    "வணக்கம்! Vanakkam! GrievanceGPT-க்கு வரவேற்கிறோம். உங்களுக்கு எப்படி உதவ முடியும்?\n\n"
+                    "குடிநீர் விநியோகத் தடை, சாலை பள்ளங்கள், குப்பை மேடு, அல்லது தெருவிளக்கு பிரச்சனை போன்ற பொதுக் குறைகளை "
+                    "பதிவு செய்யலாம், அல்லது நகராட்சி சேவைகள் பற்றிய கேள்விகளை கேட்கலாம்."
+                )
+            else:
+                reply = (
+                    "Hello! Vanakkam! Welcome to GrievanceGPT, your AI-powered smart public grievance assistant.\n\n"
+                    "How can I assist you today? You can:\n"
+                    "• **Report a Civic Issue**: Describe problems like drinking water supply disruptions, damaged roads/potholes, uncollected garbage, or streetlights.\n"
+                    "• **Ask Civic Questions**: Inquire about municipal departments, grievance procedures, or civic guidelines."
+                )
         return {
             "text": text,
             "classification": {
