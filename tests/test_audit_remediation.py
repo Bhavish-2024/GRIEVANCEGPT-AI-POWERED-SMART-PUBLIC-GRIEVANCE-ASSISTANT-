@@ -638,3 +638,68 @@ def test_16_public_navigation_and_registry_access_restriction(temp_db):
     assert track_data["department"] == "Electricity Board (TANGEDCO)"
     assert track_data["location"] == "Gandhi Market, Trichy"
 
+    # 7. Privacy check: Tracker must NOT leak internal/unfiltered text fields
+    assert "original_text" not in track_data
+    assert "normalized_text" not in track_data
+    assert "generated_grievance" not in track_data
+
+    # 8. Privacy check: Keyword searches via /api/track/{query} must NOT match or leak other citizens' records
+    res_keyword_leak = client.get("/api/track/transformer")
+    assert res_keyword_leak.status_code == 404
+    res_location_leak = client.get("/api/track/Trichy")
+    assert res_location_leak.status_code == 404
+
+
+# ─── TEST 17: Reviewer Redundancy & Integrated Completeness Flow ───
+def test_17_reviewer_redundancy_and_integrated_completeness_flow(temp_db):
+    """
+    Verifies that:
+    1. Standalone completeness audit backend logic remains functional.
+    2. The conversational complaint filing flow natively enforces completeness without needing a separate page.
+    3. Missing details trigger targeted conversational follow-up questions.
+    4. Supplying missing details yields a structured grievance ready for review and confirmation.
+    """
+    client = TestClient(app)
+
+    # 1. Backend completeness audit endpoint is operational
+    res_audit_incomplete = client.post("/api/completeness/audit", json={"text": "Water problem"})
+    assert res_audit_incomplete.status_code == 200
+    audit_data = res_audit_incomplete.json()
+    assert audit_data["is_complete"] is False
+    assert any("location" in str(f).lower() for f in audit_data["missing_fields"])
+
+    res_audit_complete = client.post(
+        "/api/completeness/audit", 
+        json={"text": "No water supply on 4th Main Road, Anna Nagar, Chennai for 3 days"}
+    )
+    assert res_audit_complete.status_code == 200
+    assert res_audit_complete.json()["is_complete"] is True
+
+    # 2. Conversational intake Turn 1: Incomplete input (missing location, district, duration)
+    session_id = "sess_completeness_test_01"
+    turn1 = client.post("/api/chat", json={
+        "message": "Water pipe is broken and leaking everywhere",
+        "session_id": session_id,
+        "accumulated_data": {}
+    }).json()
+
+    assert turn1["completeness"]["is_complete"] is False
+    assert any("location" in str(f).lower() for f in turn1["completeness"]["missing_fields"])
+    assert turn1["structured_grievance"] is None  # Must NOT generate grievance until complete
+    assert "?" in turn1["assistant_reply"]        # Must ask targeted follow-up question
+
+    # 3. Conversational intake Turn 2: Providing missing location, district & duration
+    turn2 = client.post("/api/chat", json={
+        "message": "Location is Rajaji Street in Salem district for the past 4 days",
+        "session_id": session_id,
+        "accumulated_data": turn1["extracted_entities"]
+    }).json()
+
+    # Turn 2 has accumulated problem + location + district + duration -> complete!
+    assert turn2["completeness"]["is_complete"] is True
+    assert turn2["structured_grievance"] is not None
+    assert "Rajaji Street" in turn2["structured_grievance"]["location"]
+    assert "4 days" in turn2["structured_grievance"]["duration"]
+    assert turn2["structured_grievance"]["grievance_id"].startswith("GRV-")
+
+

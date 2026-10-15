@@ -390,83 +390,6 @@ function trackThisId(id) {
     trackComplaint();
 }
 
-// Standalone Completeness Auditor
-async function auditCompleteness() {
-    const inputEl = document.getElementById('reviewer-input');
-    const text = inputEl ? inputEl.value.trim() : '';
-    if (!text) {
-        if (inputEl) {
-            inputEl.focus();
-            inputEl.classList.add('border-rose-500', 'ring-2', 'ring-rose-200');
-            setTimeout(() => inputEl.classList.remove('border-rose-500', 'ring-2', 'ring-rose-200'), 2000);
-        }
-        return;
-    }
-
-    const auditBtn = document.getElementById('reviewer-audit-btn') || document.querySelector("button[onclick='auditCompleteness()']");
-    if (auditBtn) {
-        auditBtn.disabled = true;
-        auditBtn.innerHTML = `<span>Auditing...</span>`;
-    }
-
-    try {
-        const res = await fetch('/api/completeness/audit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text })
-        });
-        const data = await res.json();
-
-        const resultsBox = document.getElementById('reviewer-results');
-        resultsBox.classList.remove('hidden');
-        document.getElementById('rev-score').textContent = data.score + '%';
-
-        const badge = document.getElementById('rev-badge');
-        if (data.is_complete) {
-            badge.textContent = "Ready for Submission";
-            badge.className = "px-4 py-1.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-950 border border-emerald-400";
-        } else {
-            badge.textContent = "Incomplete - Missing Details";
-            badge.className = "px-4 py-1.5 rounded-full text-xs font-extrabold bg-rose-100 text-rose-950 border border-rose-400";
-        }
-
-        const checklist = document.getElementById('rev-checklist');
-        checklist.innerHTML = '';
-        for (const [k, v] of Object.entries(data.field_status || {})) {
-            const li = document.createElement('li');
-            li.className = "flex items-center space-x-2 py-1 text-xs font-bold";
-            li.innerHTML = v 
-                ? `<span class="text-emerald-700 font-black text-sm">✓</span> <span class="capitalize text-slate-900 font-bold">${escapeHtml(k.replace('_', ' '))} detected</span>`
-                : `<span class="text-rose-700 font-black text-sm">✗</span> <span class="capitalize text-rose-950 font-bold">Missing ${escapeHtml(k.replace('_', ' '))}</span>`;
-            checklist.appendChild(li);
-        }
-
-        const suggestions = document.getElementById('rev-suggestions');
-        suggestions.innerHTML = '';
-        if (data.suggestions && data.suggestions.length > 0) {
-            data.suggestions.forEach(s => {
-                const li = document.createElement('li');
-                li.className = "text-slate-900 font-semibold py-1 text-xs flex items-start space-x-2";
-                li.innerHTML = `<span class="text-amber-700 font-black">•</span><span style="color: #0f172a !important; font-weight: 600 !important;">${escapeHtml(s)}</span>`;
-                suggestions.appendChild(li);
-            });
-        } else {
-            suggestions.innerHTML = '<li class="text-emerald-800 font-bold text-xs">Excellent! All essential details are present.</li>';
-        }
-
-        resultsBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-    } catch (e) {
-        console.error("Audit error:", e);
-    } finally {
-        if (auditBtn) {
-            auditBtn.disabled = false;
-            auditBtn.innerHTML = `<i data-lucide="search-check" class="w-4 h-4"></i><span>Audit Completeness</span>`;
-            if (window.lucide) lucide.createIcons();
-        }
-    }
-}
-
 // RAG / FAQ Search
 function runFaqExample(query) {
     document.getElementById('faq-query').value = query;
@@ -897,16 +820,6 @@ async function loadAnalytics() {
 window.addEventListener('DOMContentLoaded', () => {
     checkSystemHealth();
     loadAnalytics();
-
-    const reviewerInput = document.getElementById('reviewer-input');
-    if (reviewerInput) {
-        reviewerInput.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-                e.preventDefault();
-                auditCompleteness();
-            }
-        });
-    }
 });
 
 // ─── CITIZEN COMPLAINT TRACKER ─────────────────────────────────────────────────

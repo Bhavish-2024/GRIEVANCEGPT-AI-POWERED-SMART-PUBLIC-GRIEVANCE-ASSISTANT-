@@ -740,11 +740,14 @@ def get_admin_dashboard_stats() -> Dict[str, Any]:
 def get_grievance_for_tracker(grievance_id: str) -> Optional[Dict[str, Any]]:
     """
     Citizen-safe tracker lookup: returns public fields only.
-    Excludes internal fields like original_text / normalized_text.
-    Supports flexible matching (exact token, hyphenless, or partial match).
+    Excludes internal fields like original_text, normalized_text, and generated_grievance.
+    Supports flexible matching (exact token, hyphenless, or ID suffix token).
     """
     cleaned = grievance_id.strip().upper()
     hyphenless = cleaned.replace('-', '')
+    if not cleaned:
+        return None
+
     with db_session() as conn:
         cursor = conn.cursor()
         cursor.execute("""
@@ -758,12 +761,16 @@ def get_grievance_for_tracker(grievance_id: str) -> Optional[Dict[str, Any]]:
         if row:
             return dict(row)
 
-        cursor.execute("""
-            SELECT grievance_id, created_at, updated_at, category, department,
-                   urgency, location, duration, summary, status, admin_remarks, resolved_at
-            FROM grievances
-            WHERE grievance_id LIKE ? OR REPLACE(grievance_id, '-', '') LIKE ?
-            ORDER BY id DESC LIMIT 1
-        """, (f"%{cleaned}%", f"%{hyphenless}%"))
-        row = cursor.fetchone()
-        return dict(row) if row else None
+        # Allow partial token matching only if query contains at least 6 characters (e.g. GRV-101 or 000101)
+        if len(cleaned) >= 6:
+            cursor.execute("""
+                SELECT grievance_id, created_at, updated_at, category, department,
+                       urgency, location, duration, summary, status, admin_remarks, resolved_at
+                FROM grievances
+                WHERE grievance_id LIKE ? OR REPLACE(grievance_id, '-', '') LIKE ?
+                ORDER BY id DESC LIMIT 1
+            """, (f"%{cleaned}%", f"%{hyphenless}%"))
+            row = cursor.fetchone()
+            return dict(row) if row else None
+
+        return None
