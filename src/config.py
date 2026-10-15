@@ -56,7 +56,6 @@ OLLAMA_TIMEOUT = int(os.getenv("OLLAMA_TIMEOUT", 30))
 REMOTE_LLM_URL = os.getenv("REMOTE_LLM_URL", "")
 HF_TOKEN = os.getenv("HF_TOKEN", "")
 
-# Admin Portal Authentication (Multi-Factor Staff Credentials)
+# Admin Portal Authentication (Staff Credentials)
 ADMIN_USERNAME = os.getenv("ADMIN_USERNAME", "admin")
-ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "Grievance@2026")
 ADMIN_PIN = os.getenv("ADMIN_PIN", "admin@2026")

@@ -25,8 +25,7 @@ from src.config import (
     CIVICDEX_CSV,
     RAG_INDEX_PATH,
     ADMIN_PIN,
-    ADMIN_USERNAME,
-    ADMIN_PASSWORD
+    ADMIN_USERNAME
 )
 from src.database import (
     init_db,
@@ -120,7 +119,6 @@ class ConfirmRequest(BaseModel):
 class AdminLoginRequest(BaseModel):
     username: str
     pin: str
-    password: Optional[str] = None
 
 class AdminUpdateRequest(BaseModel):
     status: str
