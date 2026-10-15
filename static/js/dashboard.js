@@ -34,9 +34,10 @@ function switchTab(tabId) {
         targetNav.classList.add('nav-tab-active');
     }
 
-    if (tabId === 'registry') loadRegistry();
-    if (tabId === 'analytics') loadAnalytics();
-    if (tabId === 'admin' && adminSessionPin) loadAdminGrievances();
+    if (tabId === 'admin' && adminSessionPin) {
+        loadAdminGrievances();
+        loadAnalytics();
+    }
     if (window.lucide) lucide.createIcons();
 }
 
@@ -71,27 +72,50 @@ function resetConversation() {
     currentDraftToken = null;
 
     const container = document.getElementById('chat-messages');
-    container.innerHTML = `
-        <div class="flex items-start space-x-3">
-            <div class="w-9 h-9 rounded-2xl bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
-                <i data-lucide="bot" class="w-4 h-4"></i>
+    if (container) {
+        container.innerHTML = `
+            <div class="flex items-start space-x-3">
+                <div class="w-9 h-9 rounded-2xl bg-slate-900 flex items-center justify-center flex-shrink-0 text-white shadow-sm">
+                    <i data-lucide="bot" class="w-4 h-4"></i>
+                </div>
+                <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed" style="color: #000000 !important; -webkit-text-fill-color: #000000 !important; background-color: #f8fafc !important; border: 1.5px solid #94a3b8 !important;">
+                    <p class="font-extrabold text-black mb-1" style="color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-weight: 800 !important;">Vanakkam! Welcome to GrievanceGPT.</p>
+                    <p class="text-black font-bold" style="color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-weight: 700 !important;">
+                        Please describe your public grievance in English, தமிழ், or Tanglish. I will help verify the required details and prepare your formal complaint.
+                    </p>
+                </div>
             </div>
-            <div class="chat-bubble-ai p-4 max-w-[85%] text-sm leading-relaxed" style="color: #000000 !important; -webkit-text-fill-color: #000000 !important; background-color: #f8fafc !important; border: 1.5px solid #94a3b8 !important;">
-                <p class="font-extrabold text-black mb-1" style="color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-weight: 800 !important;">Session Reset. Welcome to GrievanceGPT.</p>
-                <p class="text-black font-bold" style="color: #000000 !important; -webkit-text-fill-color: #000000 !important; font-weight: 700 !important;">
-                    Please describe your public grievance in English, தமிழ், or Tanglish.
-                </p>
-            </div>
-        </div>
-    `;
+        `;
+    }
 
-    updateCompletenessUI(0, []);
-    document.getElementById('res-intent').textContent = '-';
-    document.getElementById('res-category').textContent = '-';
-    document.getElementById('res-department').textContent = '-';
-    document.getElementById('res-urgency').textContent = '-';
-    document.getElementById('draft-grievance-card').classList.add('hidden');
-    document.getElementById('draft-placeholder-card').classList.remove('hidden');
+    if (document.getElementById('completeness-bar')) {
+        updateCompletenessUI(0, []);
+    }
+    const elIntent = document.getElementById('res-intent');
+    if (elIntent) elIntent.textContent = '-';
+    const elCat = document.getElementById('res-category');
+    if (elCat) elCat.textContent = '-';
+    const elDept = document.getElementById('res-department');
+    if (elDept) elDept.textContent = '-';
+    const elUrg = document.getElementById('res-urgency');
+    if (elUrg) elUrg.textContent = '-';
+
+    const guideCard = document.getElementById('draft-info-guide');
+    if (guideCard) guideCard.classList.remove('hidden');
+
+    const draftCard = document.getElementById('draft-grievance-card');
+    if (draftCard) draftCard.classList.add('hidden');
+
+    const successBox = document.getElementById('draft-success-box');
+    if (successBox) successBox.classList.add('hidden');
+
+    const confirmBtn = document.getElementById('confirm-btn');
+    if (confirmBtn) {
+        confirmBtn.disabled = false;
+        confirmBtn.className = 'flex-1 py-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center space-x-1.5 shadow-sm transition';
+        confirmBtn.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-emerald-400"></i><span>Confirm & Submit Complaint</span>`;
+    }
+
     if (window.lucide) lucide.createIcons();
 }
 
@@ -130,16 +154,20 @@ async function handleChatSubmit(event) {
         // Append Assistant Reply
         appendChatMessage('assistant', data.assistant_reply);
 
-        // Update Classification Panel
+        // Update Classification Panel if present
         if (data.classification) {
-            document.getElementById('res-intent').textContent = data.classification.intent || '-';
-            document.getElementById('res-category').textContent = (data.classification.category || '-').replace('_', ' ');
-            document.getElementById('res-department').textContent = data.classification.department || '-';
-            document.getElementById('res-urgency').textContent = (data.classification.urgency || '-').toUpperCase();
+            const elIntent = document.getElementById('res-intent');
+            if (elIntent) elIntent.textContent = data.classification.intent || '-';
+            const elCat = document.getElementById('res-category');
+            if (elCat) elCat.textContent = (data.classification.category || '-').replace('_', ' ');
+            const elDept = document.getElementById('res-department');
+            if (elDept) elDept.textContent = data.classification.department || '-';
+            const elUrg = document.getElementById('res-urgency');
+            if (elUrg) elUrg.textContent = (data.classification.urgency || '-').toUpperCase();
         }
 
-        // Update Completeness
-        if (data.completeness) {
+        // Update Completeness if element exists
+        if (data.completeness && document.getElementById('completeness-bar')) {
             updateCompletenessUI(data.completeness.score, data.completeness.missing_fields);
         }
 
@@ -204,6 +232,8 @@ function updateCompletenessUI(score, missingFields) {
     const missingBox = document.getElementById('missing-info-box');
     const missingText = document.getElementById('missing-items-text');
 
+    if (!bar || !badge) return;
+
     bar.style.width = score + '%';
     badge.textContent = score + '%';
 
@@ -215,25 +245,61 @@ function updateCompletenessUI(score, missingFields) {
         bar.className = 'h-2.5 rounded-full progress-fill bg-emerald-500';
     }
 
-    if (missingFields && missingFields.length > 0) {
-        missingBox.classList.remove('hidden');
-        missingText.textContent = missingFields.join(', ');
-    } else {
-        missingBox.classList.add('hidden');
+    if (missingBox && missingText) {
+        if (missingFields && missingFields.length > 0) {
+            missingBox.classList.remove('hidden');
+            missingText.textContent = missingFields.join(', ');
+        } else {
+            missingBox.classList.add('hidden');
+        }
     }
 }
 
 function populateDraftCard(draft) {
-    document.getElementById('draft-placeholder-card').classList.add('hidden');
-    const card = document.getElementById('draft-grievance-card');
-    card.classList.remove('hidden');
+    const guideCard = document.getElementById('draft-info-guide');
+    if (guideCard) guideCard.classList.add('hidden');
+    const oldPlaceholder = document.getElementById('draft-placeholder-card');
+    if (oldPlaceholder) oldPlaceholder.classList.add('hidden');
 
-    document.getElementById('draft-token').textContent = draft.grievance_id;
-    document.getElementById('draft-subject').value = draft.subject;
-    document.getElementById('draft-description').value = draft.description;
-    document.getElementById('draft-location').value = draft.location;
-    document.getElementById('draft-duration').value = draft.duration;
+    const card = document.getElementById('draft-grievance-card');
+    if (card) card.classList.remove('hidden');
+
+    const tokenEl = document.getElementById('draft-token');
+    if (tokenEl) tokenEl.textContent = draft.grievance_id || currentDraftToken || 'DRAFT';
+
+    const deptBadge = document.getElementById('draft-dept-badge');
+    if (deptBadge) deptBadge.textContent = draft.department || currentClassification.department || 'Municipal Administration';
+
+    const catBadge = document.getElementById('draft-cat-badge');
+    if (catBadge) catBadge.textContent = (draft.category || currentClassification.category || 'civic_issue').replace(/_/g, ' ');
+
+    const urgBadge = document.getElementById('draft-urgency-badge');
+    if (urgBadge) {
+        const u = (draft.urgency || currentClassification.urgency || 'medium').toUpperCase();
+        urgBadge.textContent = `${u} PRIORITY`;
+        if (u === 'HIGH' || u === 'CRITICAL') {
+            urgBadge.className = 'px-2.5 py-1 rounded-full bg-rose-50 text-rose-900 border border-rose-200 text-[10px] font-extrabold uppercase';
+        } else if (u === 'LOW') {
+            urgBadge.className = 'px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-900 border border-emerald-200 text-[10px] font-extrabold uppercase';
+        } else {
+            urgBadge.className = 'px-2.5 py-1 rounded-full bg-amber-50 text-amber-900 border border-amber-200 text-[10px] font-extrabold uppercase';
+        }
+    }
+
+    const subInput = document.getElementById('draft-subject');
+    if (subInput) subInput.value = draft.subject || '';
+
+    const descInput = document.getElementById('draft-description');
+    if (descInput) descInput.value = draft.description || '';
+
+    const locInput = document.getElementById('draft-location');
+    if (locInput) locInput.value = draft.location || '';
+
+    const durInput = document.getElementById('draft-duration');
+    if (durInput) durInput.value = draft.duration || '';
+
     currentDraftToken = draft.grievance_id;
+    if (window.lucide) lucide.createIcons();
 }
 
 // Regenerate Grievance
@@ -258,15 +324,17 @@ async function regenerateGrievance() {
 // Confirm Grievance
 async function confirmGrievance() {
     const confirmBtn = document.getElementById('confirm-btn');
-    confirmBtn.disabled = true;
-    confirmBtn.innerHTML = `<span>Saving...</span>`;
+    if (confirmBtn) {
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = `<span>Saving...</span>`;
+    }
 
     const payload = {
         grievance_id: currentDraftToken,
-        subject: document.getElementById('draft-subject').value,
-        description: document.getElementById('draft-description').value,
-        location: document.getElementById('draft-location').value,
-        duration: document.getElementById('draft-duration').value,
+        subject: document.getElementById('draft-subject')?.value || '',
+        description: document.getElementById('draft-description')?.value || '',
+        location: document.getElementById('draft-location')?.value || '',
+        duration: document.getElementById('draft-duration')?.value || '',
         category: currentClassification.category || currentExtractedData.category || "civic_maintenance",
         department: currentClassification.department || currentExtractedData.department || "Municipal Administration",
         urgency: currentClassification.urgency || currentExtractedData.urgency || "medium",
@@ -281,18 +349,45 @@ async function confirmGrievance() {
         });
         const result = await response.json();
         
-        confirmBtn.className = 'flex-1 py-2 rounded-xl bg-slate-800 text-emerald-400 text-xs font-semibold flex items-center justify-center space-x-1 border border-emerald-500/30';
-        confirmBtn.innerHTML = `<i data-lucide="check-check" class="w-4 h-4"></i><span>Confirmed (${result.grievance_id})</span>`;
+        currentDraftToken = result.grievance_id;
+
+        // Hide editable card, reveal success box
+        const card = document.getElementById('draft-grievance-card');
+        if (card) card.classList.add('hidden');
+
+        const successBox = document.getElementById('draft-success-box');
+        if (successBox) {
+            successBox.classList.remove('hidden');
+            const tokenEl = document.getElementById('confirmed-tracking-id');
+            if (tokenEl) tokenEl.textContent = result.grievance_id;
+        }
+
+        appendChatMessage('assistant', `✅ **Grievance Confirmed & Registered!**\nYour official tracking ID is **${result.grievance_id}**.\nYou can track this grievance anytime in the **Track Complaint** tab.`);
         
-        appendChatMessage('assistant', `✅ **Grievance Confirmed!**\nYour reference ID is **${result.grievance_id}**. The complaint is saved in the registry under status **CONFIRMED**.`);
+        if (adminSessionPin) {
+            loadAdminGrievances();
+            loadAnalytics();
+        }
         if (window.lucide) lucide.createIcons();
-        loadRegistry();
-        loadAnalytics();
     } catch (err) {
         console.error(err);
-        confirmBtn.disabled = false;
-        confirmBtn.innerHTML = `<span>Confirm Grievance</span>`;
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = `<span>Confirm & Submit Complaint</span>`;
+        }
     }
+}
+
+// Helper to track a specific grievance ID directly
+function trackThisId(id) {
+    const targetId = id || currentDraftToken;
+    if (!targetId) return;
+    const trackerInput = document.getElementById('tracker-input');
+    if (trackerInput) {
+        trackerInput.value = targetId;
+    }
+    switchTab('tracker');
+    trackComplaint();
 }
 
 // Standalone Completeness Auditor
@@ -409,89 +504,30 @@ async function handleFaqSearch(event) {
     }
 }
 
-// Registry Table
+// Registry & Drawer View (Protected by Admin PIN)
 async function loadRegistry() {
-    const status = document.getElementById('filter-status').value;
-    const dept = document.getElementById('filter-dept').value;
-
-    try {
-        const res = await fetch(`/api/grievances?status=${encodeURIComponent(status)}&department=${encodeURIComponent(dept)}`);
-        const grievances = await res.json();
-
-        const tbody = document.getElementById('registry-table-body');
-        tbody.innerHTML = '';
-
-        if (grievances.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-slate-600 font-medium">No grievances recorded under this filter.</td></tr>`;
-            return;
-        }
-
-        grievances.forEach(g => {
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-50/80 transition border-b border-slate-100 text-xs";
-            const badgeClass = (g.status === 'CONFIRMED')
-                ? 'bg-blue-50 text-blue-800 border-blue-200' 
-                : (g.status === 'RESOLVED')
-                ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                : (g.status === 'UNDER_REVIEW')
-                ? 'bg-amber-50 text-amber-800 border-amber-200'
-                : 'bg-slate-100 text-slate-700 border-slate-200';
-
-            const statusLabel = g.status === 'UNDER_REVIEW' ? 'Under Review' : g.status === 'IN_PROGRESS' ? 'In Progress' : g.status;
-
-            tr.innerHTML = `
-                <td class="p-3 font-mono font-semibold text-slate-800 text-xs whitespace-nowrap">${g.grievance_id}</td>
-                <td class="p-3 font-medium text-slate-800 whitespace-nowrap">${escapeHtml(g.department)}</td>
-                <td class="p-3 font-medium text-slate-700 capitalize whitespace-nowrap">${escapeHtml(g.category.replace('_', ' '))}</td>
-                <td class="p-3 text-slate-700 font-normal max-w-[200px] truncate">${escapeHtml(g.location || 'Not specified')}</td>
-                <td class="p-3 font-semibold capitalize whitespace-nowrap ${g.urgency === 'high' ? 'text-rose-600' : g.urgency === 'low' ? 'text-emerald-600' : 'text-amber-600'}">${escapeHtml(g.urgency)}</td>
-                <td class="p-3 whitespace-nowrap">
-                    <span class="inline-block px-2.5 py-0.5 rounded-full border text-[11px] font-semibold whitespace-nowrap ${badgeClass}">
-                        ${statusLabel}
-                    </span>
-                </td>
-                <td class="p-3 text-right whitespace-nowrap">
-                    <button onclick="viewGrievance('${g.grievance_id}')" class="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white font-medium rounded-lg text-xs transition shadow-xs">
-                        View
-                    </button>
-                </td>
-            `;
-            tbody.appendChild(tr);
-        });
-
-        if (window.lucide) lucide.createIcons();
-    } catch (e) {
-        console.error("Registry load error:", e);
+    if (adminSessionPin) {
+        return loadAdminGrievances();
     }
 }
 
-// Modal View
 async function viewGrievance(id) {
+    if (!adminSessionPin) return;
     try {
-        const res = await fetch(`/api/grievances/${id}`);
-        const data = await res.json();
-
-        document.getElementById('modal-title').textContent = `${data.grievance_id} - ${data.department}`;
-        const modalBody = document.getElementById('modal-body');
-        modalBody.innerHTML = `
-            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2 font-mono text-xs whitespace-pre-wrap leading-relaxed text-slate-900 font-medium">
-${escapeHtml(data.generated_grievance || data.summary)}
-            </div>
-            <div class="grid grid-cols-2 gap-3 text-xs pt-3">
-                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100"><span class="text-slate-500 font-medium">Location:</span> <span class="text-slate-900 font-bold">${escapeHtml(data.location || 'N/A')}</span></div>
-                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100"><span class="text-slate-500 font-medium">Duration:</span> <span class="text-slate-900 font-bold">${escapeHtml(data.duration || 'N/A')}</span></div>
-                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100"><span class="text-slate-500 font-medium">Urgency:</span> <span class="text-slate-900 font-bold">${escapeHtml(data.urgency)}</span></div>
-                <div class="p-2.5 bg-slate-50 rounded-xl border border-slate-100"><span class="text-slate-500 font-medium">Status:</span> <span class="text-slate-900 font-bold">${escapeHtml(data.status)}</span></div>
-            </div>
-        `;
-        document.getElementById('grievance-modal').classList.remove('hidden');
+        const res = await fetch(`/api/admin/grievances/${encodeURIComponent(id)}`, {
+            headers: { 'X-Admin-PIN': adminSessionPin }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            openAdminDrawer(data.grievance_id, data.summary || data.original_text, data.status, data.admin_remarks);
+        }
     } catch (e) {
-        console.error(e);
+        console.error("View grievance error:", e);
     }
 }
 
 function closeModal() {
-    document.getElementById('grievance-modal').classList.add('hidden');
+    closeAdminDrawer();
 }
 
 // Analytics Dashboard
@@ -861,7 +897,6 @@ async function loadAnalytics() {
 window.addEventListener('DOMContentLoaded', () => {
     checkSystemHealth();
     loadAnalytics();
-    loadRegistry();
 
     const reviewerInput = document.getElementById('reviewer-input');
     if (reviewerInput) {

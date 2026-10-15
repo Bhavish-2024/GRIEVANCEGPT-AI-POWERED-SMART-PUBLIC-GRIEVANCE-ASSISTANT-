@@ -203,7 +203,7 @@ async def api_confirm_grievance(req: ConfirmRequest):
     )
     return JSONResponse({"status": "CONFIRMED", "grievance_id": gid})
 
-@app.get("/api/grievances")
+@app.get("/api/grievances", dependencies=[Depends(verify_admin)])
 async def api_list_grievances(
     status: Optional[str] = None,
     department: Optional[str] = None,
@@ -211,13 +211,13 @@ async def api_list_grievances(
     limit: int = 50,
     offset: int = 0
 ):
-    """Fetch stored grievance records with filtering."""
+    """Fetch stored grievance records with filtering — requires X-Admin-PIN header."""
     records = list_grievances(status=status, department=department, search=search, limit=limit, offset=offset)
     return JSONResponse(records)
 
-@app.get("/api/grievances/{grievance_id}")
+@app.get("/api/grievances/{grievance_id}", dependencies=[Depends(verify_admin)])
 async def api_get_grievance(grievance_id: str):
-    """Fetch single grievance record by ID."""
+    """Fetch single grievance record by ID — requires X-Admin-PIN header."""
     rec = get_grievance(grievance_id)
     if not rec:
         raise HTTPException(status_code=404, detail="Grievance not found")

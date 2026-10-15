@@ -576,3 +576,65 @@ def test_15_full_e2e_complaint_lifecycle(temp_db):
     tdata = res_track2.json()
     assert tdata["status"] == "RESOLVED"
     assert "Pipeline patched" in tdata["admin_remarks"]
+
+
+# ─── TEST 16: Public Navigation & Registry Access Restriction ───
+def test_16_public_navigation_and_registry_access_restriction(temp_db):
+    """
+    Verifies that public callers cannot access sensitive complaint records via /api/grievances,
+    while authorized staff with X-Admin-PIN can access them, and public citizens can still
+    track individual complaints via /api/track/{id}.
+    """
+    client = TestClient(app)
+    
+    # Create a confirmed complaint
+    gid = save_grievance(
+        original_text="Broken transformer emitting sparks near market",
+        normalized_text="Broken transformer emitting sparks near market",
+        category="power_cut",
+        department="Electricity Board (TANGEDCO)",
+        urgency="high",
+        severity="safety_hazard",
+        location="Gandhi Market, Trichy",
+        district="Tiruchirappalli",
+        duration="1 day",
+        summary="Sparking transformer",
+        generated_grievance="Urgent fix required",
+        status="CONFIRMED"
+    )
+
+    # 1. Unauthenticated request to /api/grievances MUST return 401 Unauthorized
+    res_public_list = client.get("/api/grievances")
+    assert res_public_list.status_code == 401
+    assert "Unauthorized" in res_public_list.json()["detail"]
+
+    # 2. Unauthenticated request to /api/grievances/{id} MUST return 401 Unauthorized
+    res_public_get = client.get(f"/api/grievances/{gid}")
+    assert res_public_get.status_code == 401
+    assert "Unauthorized" in res_public_get.json()["detail"]
+
+    # 3. Request with wrong PIN MUST return 401 Unauthorized
+    res_wrong_pin = client.get("/api/grievances", headers={"X-Admin-PIN": "WRONG_PIN"})
+    assert res_wrong_pin.status_code == 401
+
+    # 4. Request with valid Admin PIN MUST return 200 OK
+    res_admin_list = client.get("/api/grievances", headers={"X-Admin-PIN": ADMIN_PIN})
+    assert res_admin_list.status_code == 200
+    records = res_admin_list.json()
+    assert len(records) >= 1
+    assert records[0]["grievance_id"] == gid
+
+    # 5. Single item with valid Admin PIN MUST return 200 OK
+    res_admin_get = client.get(f"/api/grievances/{gid}", headers={"X-Admin-PIN": ADMIN_PIN})
+    assert res_admin_get.status_code == 200
+    assert res_admin_get.json()["grievance_id"] == gid
+
+    # 6. Public tracking via /api/track/{id} MUST remain open without PIN
+    res_track = client.get(f"/api/track/{gid}")
+    assert res_track.status_code == 200
+    track_data = res_track.json()
+    assert track_data["grievance_id"] == gid
+    assert track_data["status"] == "CONFIRMED"
+    assert track_data["department"] == "Electricity Board (TANGEDCO)"
+    assert track_data["location"] == "Gandhi Market, Trichy"
+
