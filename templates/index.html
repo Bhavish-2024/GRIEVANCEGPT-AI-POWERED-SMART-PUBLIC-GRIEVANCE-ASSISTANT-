@@ -555,22 +555,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Password -->
-                                <div>
-                                    <label for="admin-password-input" class="block text-[11px] uppercase font-bold text-slate-600 mb-1 tracking-wider text-left">Official Password</label>
-                                    <div class="relative">
-                                        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                                            <i data-lucide="lock" class="w-4 h-4"></i>
-                                        </div>
-                                        <input type="password" id="admin-password-input" placeholder="Enter staff password"
-                                               class="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-10 py-2.5 text-xs sm:text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-slate-800 font-medium transition"
-                                               required autocomplete="current-password">
-                                        <button type="button" onclick="togglePasswordVisibility('admin-password-input', this)" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700">
-                                            <i data-lucide="eye" class="w-4 h-4"></i>
-                                        </button>
-                                    </div>
-                                </div>
-
                                 <!-- Department Security PIN / 2FA -->
                                 <div>
                                     <div class="flex items-center justify-between mb-1">
@@ -593,7 +577,7 @@
                                 <!-- Error Alert Box -->
                                 <div id="admin-login-error" class="hidden p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start space-x-2 text-left">
                                     <i data-lucide="alert-circle" class="w-4 h-4 text-rose-600 shrink-0 mt-0.5"></i>
-                                    <span id="admin-login-error-text">Invalid Officer ID, Password, or PIN.</span>
+                                    <span id="admin-login-error-text">Invalid Officer ID or Security PIN.</span>
                                 </div>
 
                                 <!-- Submit Button -->
@@ -609,17 +593,13 @@
                                     <i data-lucide="info" class="w-3.5 h-3.5 text-blue-600"></i>
                                     <span>Authorized Municipal Test Credentials</span>
                                 </div>
-                                <div class="grid grid-cols-3 gap-1.5 text-[10px] font-mono">
-                                    <div class="p-1.5 bg-white rounded-lg border border-slate-200">
+                                <div class="grid grid-cols-2 gap-2 text-[10px] font-mono">
+                                    <div class="p-2 bg-white rounded-lg border border-slate-200">
                                         <span class="text-slate-400 block text-[9px] uppercase font-sans font-bold">Officer ID</span>
                                         <span class="text-slate-900 font-bold select-all">admin</span>
                                     </div>
-                                    <div class="p-1.5 bg-white rounded-lg border border-slate-200">
-                                        <span class="text-slate-400 block text-[9px] uppercase font-sans font-bold">Password</span>
-                                        <span class="text-slate-900 font-bold select-all">Grievance@2026</span>
-                                    </div>
-                                    <div class="p-1.5 bg-white rounded-lg border border-slate-200">
-                                        <span class="text-slate-400 block text-[9px] uppercase font-sans font-bold">2FA PIN</span>
+                                    <div class="p-2 bg-white rounded-lg border border-slate-200">
+                                        <span class="text-slate-400 block text-[9px] uppercase font-sans font-bold">Security PIN / 2FA</span>
                                         <span class="text-slate-900 font-bold select-all">admin@2026</span>
                                     </div>
                                 </div>

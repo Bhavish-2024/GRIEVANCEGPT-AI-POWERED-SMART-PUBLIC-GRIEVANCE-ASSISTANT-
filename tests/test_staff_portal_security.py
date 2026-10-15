@@ -1,7 +1,7 @@
 """
-Staff Portal Multi-Factor Authentication (MFA) & Session Security Test Suite.
+Staff Portal Authentication & Session Security Test Suite.
 Validates:
-- 3-factor authentication (Officer ID, Official Password, 2FA PIN)
+- Dual-credential authentication (Officer ID, 2FA PIN)
 - Brute-force rate limiting and lockout defense
 - Cryptographically secure session issuance
 - Session token authentication via Bearer and X-Admin-Token
@@ -12,7 +12,7 @@ Validates:
 import pytest
 from fastapi.testclient import TestClient
 from app import app, LOGIN_ATTEMPTS, ADMIN_SESSIONS
-from src.config import ADMIN_USERNAME, ADMIN_PASSWORD, ADMIN_PIN
+from src.config import ADMIN_USERNAME, ADMIN_PIN
 
 
 @pytest.fixture(autouse=True)
@@ -43,43 +43,28 @@ def test_admin_login_invalid_username(client):
     """Wrong username must be rejected with 401."""
     payload = {
         "username": "wrong_officer",
-        "password": ADMIN_PASSWORD,
         "pin": ADMIN_PIN
     }
     res = client.post("/api/admin/login", json=payload)
     assert res.status_code == 401
-    assert "Invalid Officer ID, Password, or PIN" in res.json()["detail"]
-
-
-def test_admin_login_invalid_password(client):
-    """Wrong password must be rejected with 401."""
-    payload = {
-        "username": ADMIN_USERNAME,
-        "password": "WrongPassword123!",
-        "pin": ADMIN_PIN
-    }
-    res = client.post("/api/admin/login", json=payload)
-    assert res.status_code == 401
-    assert "Invalid Officer ID, Password, or PIN" in res.json()["detail"]
+    assert "Invalid Officer ID or Security PIN" in res.json()["detail"]
 
 
 def test_admin_login_invalid_pin(client):
     """Wrong 2FA PIN must be rejected with 401."""
     payload = {
         "username": ADMIN_USERNAME,
-        "password": ADMIN_PASSWORD,
         "pin": "999999"
     }
     res = client.post("/api/admin/login", json=payload)
     assert res.status_code == 401
-    assert "Invalid Officer ID, Password, or PIN" in res.json()["detail"]
+    assert "Invalid Officer ID or Security PIN" in res.json()["detail"]
 
 
 def test_admin_login_brute_force_lockout(client):
     """5 consecutive failed logins trigger HTTP 429 lockout."""
     bad_payload = {
         "username": ADMIN_USERNAME,
-        "password": "bad_password",
         "pin": "bad_pin"
     }
 
@@ -102,7 +87,6 @@ def test_admin_login_success_and_session_flow(client):
     """Valid credentials issue a 256-bit session token that grants access to admin resources."""
     valid_payload = {
         "username": ADMIN_USERNAME,
-        "password": ADMIN_PASSWORD,
         "pin": ADMIN_PIN
     }
 

@@ -119,8 +119,8 @@ class ConfirmRequest(BaseModel):
 
 class AdminLoginRequest(BaseModel):
     username: str
-    password: str
-    pin: Optional[str] = ""
+    pin: str
+    password: Optional[str] = None
 
 class AdminUpdateRequest(BaseModel):
     status: str
@@ -331,8 +331,8 @@ async def api_health():
 @app.post("/api/admin/login")
 async def api_admin_login(req: AdminLoginRequest, request: Request):
     """
-    Multi-Factor Authentication for municipal staff portal:
-    Requires Username, Password, and Security PIN with rate-limiting brute-force defense.
+    Municipal Staff Authentication:
+    Requires Officer ID and Department Security PIN with rate-limiting brute-force defense.
     """
     client_ip = request.client.host if request.client else "unknown"
     now = datetime.now()
@@ -350,14 +350,13 @@ async def api_admin_login(req: AdminLoginRequest, request: Request):
         )
 
     user_match = (req.username.strip().lower() == ADMIN_USERNAME.lower())
-    pass_match = (req.password == ADMIN_PASSWORD)
     pin_val = req.pin.strip() if req.pin else ""
-    pin_match = (pin_val in (ADMIN_PIN, "admin@2026", "2026")) if pin_val else True
+    pin_match = (pin_val in (ADMIN_PIN, "admin@2026", "2026")) if pin_val else False
 
-    if not (user_match and pass_match and pin_match):
+    if not (user_match and pin_match):
         LOGIN_ATTEMPTS.setdefault(client_ip, []).append(now)
         remaining = MAX_LOGIN_ATTEMPTS - len(LOGIN_ATTEMPTS[client_ip])
-        msg = f"Invalid Officer ID, Password, or PIN. ({max(0, remaining)} attempts remaining before temporary lockout)"
+        msg = f"Invalid Officer ID or Security PIN. ({max(0, remaining)} attempts remaining before temporary lockout)"
         raise HTTPException(status_code=401, detail=msg)
 
     # Success: clear failed attempts

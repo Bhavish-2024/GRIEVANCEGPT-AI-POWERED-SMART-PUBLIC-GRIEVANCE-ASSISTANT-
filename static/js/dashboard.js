@@ -1039,14 +1039,12 @@ async function adminLogin(event) {
     if (event && event.preventDefault) event.preventDefault();
 
     const userInput = document.getElementById('admin-user-input');
-    const passInput = document.getElementById('admin-password-input');
     const pinInput = document.getElementById('admin-pin-input');
     const errEl = document.getElementById('admin-login-error');
     const errText = document.getElementById('admin-login-error-text');
     const submitBtn = document.getElementById('admin-login-btn');
 
     const username = userInput ? userInput.value.trim() : '';
-    const password = passInput ? passInput.value : '';
     const pin = pinInput ? pinInput.value.trim() : '';
 
     if (errEl) errEl.classList.add('hidden');
@@ -1061,7 +1059,7 @@ async function adminLogin(event) {
         const res = await fetch('/api/admin/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, pin })
+            body: JSON.stringify({ username, pin })
         });
 
         const data = await res.json();
@@ -1146,9 +1144,7 @@ async function adminLogout() {
 
     document.getElementById('admin-dashboard').classList.add('hidden');
     document.getElementById('admin-login-card').classList.remove('hidden');
-    const passInput = document.getElementById('admin-password-input');
     const pinInput = document.getElementById('admin-pin-input');
-    if (passInput) passInput.value = '';
     if (pinInput) pinInput.value = '';
     closeAdminDrawer();
 }
