@@ -22,10 +22,24 @@ def synchronize_classification(text: str, category: str, department: str, urgenc
     lowered = text.lower()
     has_water = any(w in lowered for w in ["water", "தண்ணீர்", "குடிநீர்", "thanni", "pipeline", "tap"])
     has_elec = any(w in lowered for w in ["electricity", "power", "current", "voltage", "transformer", "electric", "elctric"])
-    has_road = any(w in lowered for w in ["road", "pothole", "சாலை", "குழி", "kuzhi"])
-    has_light = any(w in lowered for w in ["light", "streetlight", "விளக்கு"])
+    has_light = any(w in lowered for w in ["light", "streetlight", "street light", "விளக்கு", "bulb", "lamp"])
     has_garbage = any(w in lowered for w in ["garbage", "kuppai", "குப்பை", "waste"])
     has_drainage = any(w in lowered for w in ["drain", "sewage", "saakadai", "சாக்கடை"])
+
+    road_defect_terms = [
+        "pothole", "potholes", "சாலை", "குழி", "kuzhi", "tar road", "asphalt",
+        "broken road", "damaged road", "bad road", "road damage", "road broken",
+        "road cave", "crater"
+    ]
+    has_road_defect = any(w in lowered for w in road_defect_terms)
+    has_other_utility = has_water or has_elec or has_light or has_garbage or has_drainage
+
+    if has_road_defect:
+        has_road = True
+    elif "road" in lowered and not has_other_utility:
+        has_road = True
+    else:
+        has_road = False
 
     # 1. Multi-utility compound complaints
     if has_water and has_elec:

@@ -44,6 +44,11 @@ DURATION_PATTERNS = [
     re.compile(r'(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:hours?|mani|மணி நேரமாக)', re.IGNORECASE),
 ]
 
+SINCE_DURATION_PATTERNS = [
+    re.compile(r'(?:since|from)\s+(?:the\s+)?(?:last\s+|past\s+)?(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|yesterday|last\s+week|last\s+month|morning|last\s+night)', re.IGNORECASE),
+    re.compile(r'(?:for|past|last)\s+(?:the\s+)?(?:last\s+|past\s+)?(\d+|one|two|three|four|five|six|seven|eight|nine|ten)\s*(?:days?|weeks?|months?|hours?)', re.IGNORECASE),
+]
+
 LOCATION_PATTERNS = [
     re.compile(r'\b(?:[0-9]+(?:st|nd|rd|th)?\s+)?(?:[A-Z][a-zA-Z0-9\.-]+\s+)*(?:Nagar|Street|Road|Salai|Colony|Cross|Ward|Village|Town|Station|Bazaar|Puram|Garden|Layout)\b', re.IGNORECASE),
     re.compile(r'(?:near|opp|opposite|at|in|on|near by|பக்கத்துல|அருகில்)\s+([A-Za-z0-9\s,\.-]+?)(?:\s+(?:for|since|last|from|having|water|road|is|was)|\.|$)', re.IGNORECASE),
@@ -85,16 +90,29 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
                 duration = f"{num} days"
             break
 
+    if duration == "Unspecified":
+        for pat in SINCE_DURATION_PATTERNS:
+            match = pat.search(text)
+            if match:
+                duration = match.group(0).strip()
+                break
+
     # 2. Location extraction
     location = "pending confirmation"
     vague_terms = {
         "this place", "this area", "here", "my area", "enga area", "our area",
         "nearby", "same place", "same area", "place", "area", "this issue",
-        "inga", "not specified", "unspecified", "pending confirmation"
+        "inga", "not specified", "unspecified", "pending confirmation",
+        "street", "road", "salai", "lane", "nagar", "ward"
     }
     found_locs = []
     for match in LOCATION_PATTERNS[0].finditer(text):
         cand = match.group(0).strip()
+        end_idx = match.end()
+        # Avoid capturing "Street" when part of "Street light" or "Street lighting"
+        after_text = text[end_idx:].strip().lower()
+        if cand.lower() == "street" and after_text.startswith(("light", "lamp", "bulb", "pole")):
+            continue
         if len(cand) > 3 and cand.lower() not in vague_terms:
             found_locs.append(cand)
             
@@ -138,10 +156,24 @@ def heuristic_extract(text: str) -> Dict[str, Any]:
     # 4. Problem & Category heuristics
     has_water = any(k in text or k in lowered for k in ["water", "தண்ணீர்", "குடிநீர்", "thanni", "pipeline", "tap"])
     has_elec = any(k in text or k in lowered for k in ["electricity", "power", "current", "voltage", "transformer", "electric", "elctric"])
-    has_road = any(k in text or k in lowered for k in ["road", "pothole", "சாலை", "குழி", "kuzhi", "tar road"])
-    has_light = any(k in text or k in lowered for k in ["light", "விளக்கு", "streetlight", "street light", "bulb"])
+    has_light = any(k in text or k in lowered for k in ["light", "விளக்கு", "streetlight", "street light", "bulb", "lamp"])
     has_garbage = any(k in text or k in lowered for k in ["garbage", "waste", "குப்பை", "kuppai", "dustbin", "bin"])
     has_drainage = any(k in text or k in lowered for k in ["drain", "sewer", "வடிகால்", "drainage", "saakadai", "சாக்கடை"])
+
+    road_defect_terms = [
+        "pothole", "potholes", "சாலை", "குழி", "kuzhi", "tar road", "asphalt",
+        "broken road", "damaged road", "bad road", "road damage", "road broken",
+        "road cave", "crater"
+    ]
+    has_road_defect = any(k in lowered for k in road_defect_terms)
+    has_other_utility = has_water or has_elec or has_light or has_garbage or has_drainage
+
+    if has_road_defect:
+        has_road = True
+    elif "road" in lowered and not has_other_utility:
+        has_road = True
+    else:
+        has_road = False
 
     if has_water and has_elec:
         category = "water_supply & electricity"

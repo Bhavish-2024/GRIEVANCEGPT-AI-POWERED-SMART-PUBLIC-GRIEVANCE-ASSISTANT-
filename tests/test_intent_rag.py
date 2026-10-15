@@ -153,3 +153,42 @@ def test_unanswerable_civic_question_honest_fallback():
     assert analyzed["workflow_stage"] == "CIVIC_INFO"
     assert analyzed["rag"]["sources"] == []
     assert "could not find relevant information" in analyzed["assistant_reply"].lower()
+
+def test_streetlight_on_road_not_misclassified_as_road_damage():
+    """
+    CRITICAL USER PROMPT TEST:
+    'Street light is not working on 5th Cross Road, Gandhi Nagar since last Friday.'
+    1. Must NOT classify as 'Road damage/potholes' or 'Roads & Street Lighting Department'
+    2. Must classify as street_lighting -> 'Civic Maintenance & Street Lighting'
+    3. Must extract duration as 'since last Friday'
+    4. Must NOT ask for duration again, only District.
+    """
+    text = "Street light is not working on 5th Cross Road, Gandhi Nagar since last Friday."
+    
+    # Classification check
+    clf = classifier.predict(text)
+    assert clf["category"] == "street_lighting", f"Expected street_lighting, got {clf['category']}"
+    assert clf["department"] == "Civic Maintenance & Street Lighting", f"Expected Civic Maintenance & Street Lighting, got {clf['department']}"
+
+    # Analyzer check
+    analyzed = analyze_grievance_text(text)
+    assert analyzed["workflow_stage"] == "INFORMATION_COLLECTION"
+    assert analyzed["classification"]["department"] == "Civic Maintenance & Street Lighting"
+    assert analyzed["classification"]["category"] == "street_lighting"
+    assert "road damage" not in analyzed["extracted_entities"]["problem"].lower()
+    assert analyzed["extracted_entities"]["problem"] == "Defective non-functional street lights"
+    assert analyzed["extracted_entities"]["duration"] == "since last Friday"
+    assert "5th Cross Road" in analyzed["extracted_entities"]["location"]
+    assert analyzed["extracted_entities"]["location"] == "5th Cross Road, Gandhi Nagar"
+    
+    # Missing fields should ONLY be District
+    assert "District (e.g. Chennai, Vellore, Coimbatore)" in analyzed["completeness"]["missing_fields"]
+    assert "Duration (e.g. 4 days, 2 weeks)" not in analyzed["completeness"]["missing_fields"]
+    
+    # Verify assistant reply does not mention road damage and does not ask for duration
+    reply = analyzed["assistant_reply"]
+    assert "road damage" not in reply.lower()
+    assert "pothole" not in reply.lower()
+    assert "duration" not in reply.lower() or "how long" not in reply.lower()
+    assert "District" in reply
+
